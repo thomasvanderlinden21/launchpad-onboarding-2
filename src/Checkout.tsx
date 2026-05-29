@@ -33,9 +33,9 @@ function scrollTo(container: HTMLDivElement, to: number, duration = 460) {
   requestAnimationFrame(tick)
 }
 
-const EXIT_UP: object = {
+const EXIT_UP = {
   opacity: 0, y: -20,
-  transition: { duration: 0.24, ease: [0.4, 0, 1, 1] },
+  transition: { duration: 0.24, ease: [0.4, 0, 1, 1] as const },
 }
 
 const ENTER_DOWN = {
@@ -591,10 +591,10 @@ function ChevronRight() {
   )
 }
 
-function CompanyLookupBubble({ scrollRef, initialQuery = '', onQueryChange, onFind, onEditSearch, showResults, data, onEdit, onConfirm }: {
+function CompanyLookupBubble({ scrollRef, initialQuery = '', onQueryChange, onFind, onEditSearch, showResults, onEdit, onConfirm }: {
   scrollRef: React.RefObject<HTMLDivElement | null>
   initialQuery?: string; onQueryChange?: (q: string) => void; onFind?: () => void; onEditSearch?: () => void
-  showResults: boolean; data: CompanyData; onEdit: () => void; onConfirm: () => void
+  showResults: boolean; onEdit: () => void; onConfirm: () => void
 }) {
   const [query, setQuery] = useState(initialQuery)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -1057,7 +1057,7 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
   )
 }
 
-function CompactSummaryBubble({ data, account }: { data: CompanyData; account: AccountForm }) {
+function CompactSummaryBubble({ data }: { data: CompanyData }) {
   const address = `${data.street} ${data.number}, ${data.postcode}, ${data.city}, Belgium`
   return (
     <div style={{ padding: '0 12px' }}>
@@ -1215,7 +1215,6 @@ export default function Checkout() {
   const maxScrollTop        = useRef<number>(0)
   const passwordRef = useRef<HTMLDivElement>(null)
   const companyRef  = useRef<HTMLDivElement>(null)
-  const resultsRef  = useRef<HTMLDivElement>(null)
   const selectedRef = useRef<HTMLDivElement>(null)
   const editRef     = useRef<HTMLDivElement>(null)
   const summaryRef  = useRef<HTMLDivElement>(null)
@@ -1280,10 +1279,8 @@ export default function Checkout() {
   // Phase ordering — drives cumulative rendering
   const PHASE_ORDER: Phase[] = ['form', 'verification', 'password', 'company', 'results', 'selected', 'edit', 'summary', 'payment', 'success']
   const phaseIdx = PHASE_ORDER.indexOf(phase)
-  const from = (p: Phase) => PHASE_ORDER.indexOf(p) <= phaseIdx
   const is   = (p: Phase) => phase === p
   const past = (p: Phase) => PHASE_ORDER.indexOf(p) < phaseIdx
-  const noRef = { current: null } as React.RefObject<HTMLDivElement | null>
 
   if (is('success')) {
     return (
@@ -1366,7 +1363,6 @@ export default function Checkout() {
                 onFind={is('company') ? () => setPhase('results') : undefined}
                 onEditSearch={() => setPhase('company')}
                 showResults={is('results')}
-                data={companyData}
                 onEdit={() => setPhase('edit')}
                 onConfirm={() => setPhase('selected')}
               />
@@ -1407,7 +1403,7 @@ export default function Checkout() {
             )}
             {past('summary') && accountData && (
               <motion.div key="summary-done" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: EASE }}>
-                <CompactSummaryBubble data={companyData} account={accountData} />
+                <CompactSummaryBubble data={companyData} />
               </motion.div>
             )}
           </AnimatePresence>

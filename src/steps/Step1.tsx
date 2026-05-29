@@ -25,7 +25,6 @@ type Phase = 'role' | 'details' | 'identity' | 'scan'
 const PHASE_ORDER: Phase[] = ['role', 'details', 'identity', 'scan']
 const phaseIdx = (p: Phase) => PHASE_ORDER.indexOf(p)
 const is   = (cur: Phase, t: Phase) => cur === t
-const past = (cur: Phase, t: Phase) => phaseIdx(cur) > phaseIdx(t)
 const from = (cur: Phase, t: Phase) => phaseIdx(cur) >= phaseIdx(t)
 
 // ─── Avatars ──────────────────────────────────────────────────────────────────

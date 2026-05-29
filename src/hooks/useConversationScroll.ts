@@ -8,8 +8,8 @@ function getGap(el: HTMLElement) {
 }
 
 export interface UseConversationScrollReturn {
-  scrollRef:        RefObject<HTMLDivElement>
-  bottomAnchorRef:  RefObject<HTMLDivElement>
+  scrollRef:        RefObject<HTMLDivElement | null>
+  bottomAnchorRef:  RefObject<HTMLDivElement | null>
   showJumpToLatest: boolean
   jumpToLatest:     () => void
 }
