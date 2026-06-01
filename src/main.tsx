@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import './index.css'
 import Onboarding from './Onboarding.tsx'
 import Dashboard from './Dashboard.tsx'
-import Sales from './Sales.tsx'
 import Checkout from './Checkout.tsx'
 import Basket from './Basket.tsx'
 import { AppShell } from './AppShell.tsx'

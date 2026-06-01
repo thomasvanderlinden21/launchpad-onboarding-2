@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 // ─── Empty state layout ───────────────────────────────────────────────────────
 
-function EmptyPage({ pageTitle, icon, title, description }: {
-  pageTitle: string
+function EmptyPage({ icon, title, description }: {
   icon: React.ReactNode
   title: string
   description: string
@@ -43,7 +42,6 @@ const s = { stroke: '#277777', strokeWidth: 1.5, strokeLinecap: 'round' as const
 export function SalesPage() {
   return (
     <EmptyPage
-      pageTitle="Sales"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <path d="M18 20V10M12 20V4M6 20v-6" {...s} />
@@ -58,7 +56,6 @@ export function SalesPage() {
 export function TerminalsPage() {
   return (
     <EmptyPage
-      pageTitle="Terminals"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <rect x="4" y="2" width="16" height="20" rx="2" {...s} />
@@ -75,7 +72,6 @@ export function TerminalsPage() {
 export function PaymentsPage() {
   return (
     <EmptyPage
-      pageTitle="Payments"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <path d="M7 16l-4-4 4-4M17 8l4 4-4 4" {...s} />
@@ -91,7 +87,6 @@ export function PaymentsPage() {
 export function CataloguePage() {
   return (
     <EmptyPage
-      pageTitle="Product catalogue"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <path d="M12.586 2H20a1 1 0 011 1v7.414a1 1 0 01-.293.707l-9.5 9.5a2 2 0 01-2.828 0l-5-5a2 2 0 010-2.828l9.5-9.5A1 1 0 0112.586 2z" {...s} />
@@ -107,7 +102,6 @@ export function CataloguePage() {
 export function BusinessPage() {
   return (
     <EmptyPage
-      pageTitle="My business"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <path d="M3 21V8l9-5 9 5v13H3z" {...s} />
@@ -124,7 +118,6 @@ export function BusinessPage() {
 export function CardIssuingPage() {
   return (
     <EmptyPage
-      pageTitle="Card issuing"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <rect x="2" y="6" width="20" height="13" rx="2" {...s} />
@@ -141,7 +134,6 @@ export function CardIssuingPage() {
 export function CashAdvancePage() {
   return (
     <EmptyPage
-      pageTitle="Cash advance"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" {...s} />
@@ -158,7 +150,6 @@ export function CashAdvancePage() {
 export function SettingsPage() {
   return (
     <EmptyPage
-      pageTitle="Settings"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="3" {...s} />
@@ -174,7 +165,6 @@ export function SettingsPage() {
 export function NotificationsPage() {
   return (
     <EmptyPage
-      pageTitle="Notifications"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" {...s} />
@@ -190,7 +180,6 @@ export function NotificationsPage() {
 export function HelpPage() {
   return (
     <EmptyPage
-      pageTitle="Help"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" {...s} />
@@ -207,7 +196,6 @@ export function HelpPage() {
 export function AiAssistantPage() {
   return (
     <EmptyPage
-      pageTitle="AI assistant"
       icon={
         <svg width={40} height={40} viewBox="0 0 24 24" fill="none">
           <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.74L4 10l5.91-1.74L12 2z" {...s} />

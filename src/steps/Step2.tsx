@@ -14,7 +14,6 @@ interface KeyIndividual {
   detail: string
 }
 
-const initialIndividuals: KeyIndividual[] = []
 
 function AiAvatar() {
   return (

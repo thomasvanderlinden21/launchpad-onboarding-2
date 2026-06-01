@@ -14,7 +14,6 @@ import { getResumeStep, markStepCompleted } from './onboardingProgress'
 
 const TOTAL_STEPS = 5
 const EASE = [0.22, 1, 0.36, 1] as const
-const T: React.CSSProperties = { fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px' }
 
 const STEP_TITLES = [
   'Verify your identity',

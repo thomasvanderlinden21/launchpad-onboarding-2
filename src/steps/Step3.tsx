@@ -357,7 +357,6 @@ export function Step3({ onComplete }: Step3Props) {
   const canContinueTurnover = averageTransactionValue !== '' && monthlyTurnover !== ''
 
   const salesLocationSummary = 'Sales location is 1442 Chaussee de Haecht'
-  const businessSummary = `${differentTradingName ? tradingName : 'Beantastic Coffee'} VAT ID ${vatId}`
 
   const categoryOptions = Object.keys(MCC_DATA)
   const subCategoryOptions = categoryGroup ? Object.keys(MCC_DATA[categoryGroup] ?? {}) : []

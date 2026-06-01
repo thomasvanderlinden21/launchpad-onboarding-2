@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 const AI_BG = '#e6f0ef'
-const USER_BG = '#dcf4fa'
 const EASE = [0.22, 1, 0.36, 1] as const
 const T: React.CSSProperties = { fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px' }
 
@@ -14,7 +13,6 @@ interface Step4Props {
 }
 
 const SCREEN_LOGIN     = '/images/connect-bank-01.png'
-const SCREEN_AUTHORIZE = '/images/connect-bank-02.png'
 const SCREEN_CONNECTING = '/images/connect-bank-03.png'
 const SCREEN_SUCCESS   = '/images/connect-bank-04.png'
 
@@ -37,17 +35,6 @@ function AiAvatar() {
   )
 }
 
-function UserAvatar() {
-  return (
-    <div style={{ position: 'absolute', top: -12, right: -9, width: 17, height: 17, borderRadius: 9999, backgroundColor: '#066076', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
-      <svg width={10} height={10} viewBox="0 0 10 10" fill="none" aria-hidden="true">
-        <circle cx={5} cy={3.5} r={2} fill="white" />
-        <path d="M1 9c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="white" strokeWidth={1} strokeLinecap="round" />
-      </svg>
-    </div>
-  )
-}
-
 function AiBubble({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ padding: 12, width: '100%' }}>
@@ -59,46 +46,8 @@ function AiBubble({ children }: { children: React.ReactNode }) {
   )
 }
 
-function UserBubble({ text }: { text: string }) {
-  return (
-    <div style={{ padding: 12, display: 'flex', justifyContent: 'flex-end' }}>
-      <div style={{ position: 'relative', backgroundColor: USER_BG, borderRadius: '12px 0 12px 12px', padding: 12, filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))' }}>
-        <UserAvatar />
-        <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{text}</p>
-      </div>
-    </div>
-  )
-}
-
 function AiTitle({ children }: { children: React.ReactNode }) {
   return <h2 style={{ fontFamily: 'Raleway, Inter, sans-serif', fontSize: 24, fontWeight: 500, lineHeight: '32px', color: '#121621', margin: 0 }}>{children}</h2>
-}
-
-function PrimaryBtn({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        minHeight: 40,
-        backgroundColor: '#277777',
-        border: '1px solid #277777',
-        borderRadius: 4,
-        padding: '8px 10px',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        fontFamily: 'Inter, sans-serif',
-        fontSize: 16,
-        fontWeight: 500,
-        lineHeight: '22px',
-        color: 'white',
-        boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.16)',
-        opacity: disabled ? 0.5 : 1,
-      }}
-    >
-      {label}
-    </button>
-  )
 }
 
 function ScreenImage({ src, alt, height, onClick }: { src: string; alt: string; height: number; onClick?: () => void }) {
@@ -235,8 +184,6 @@ export function Step4({ onComplete }: Step4Props) {
     const id = window.setTimeout(() => setPhase('success'), 1400)
     return () => window.clearTimeout(id)
   }, [phase])
-
-  const selectedBankName = BANKS.find(b => b.id === selectedBank)?.name ?? 'Bank'
 
   return (
     <div style={{ width: '100%', paddingBottom: 32 }}>

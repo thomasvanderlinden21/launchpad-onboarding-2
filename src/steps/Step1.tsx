@@ -149,7 +149,7 @@ function RadioOption({ label, selected, onClick }: { label: string; selected: bo
 
 // ─── Info card ────────────────────────────────────────────────────────────────
 
-function InfoCard({ businessName }: { businessName: string }) {
+function InfoCard() {
   return (
     <div style={{ backgroundColor: 'white', borderRadius: 8, boxShadow: '0px 4px 2px rgba(0,0,0,0.15)', padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', margin: 0 }}>
@@ -578,7 +578,7 @@ export function Step1({ onComplete }: Step1Props) {
                 <AiTitle>Your role in the company</AiTitle>
                 <BodyText>The next part is about individuals who play a significant role in {businessName}.</BodyText>
 
-                <InfoCard businessName={businessName} />
+                <InfoCard />
 
                 <QuestionRow
                   label="Are you a Signatory?"

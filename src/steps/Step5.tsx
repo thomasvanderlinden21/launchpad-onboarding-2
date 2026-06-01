@@ -14,7 +14,6 @@ interface Step5Props {
 const DOC_ICON_PAGE = 'https://www.figma.com/api/mcp/asset/f2244f07-c7f6-4d2d-88f5-675ae6e796aa'
 const DOC_ICON_PDF = 'https://www.figma.com/api/mcp/asset/596201ef-dc74-4e61-81be-6bb56f455fa1'
 const OPEN_ICON = 'https://www.figma.com/api/mcp/asset/03d04485-f818-41e5-825c-3beff40e3faf'
-const CHECK_ICON = 'https://www.figma.com/api/mcp/asset/78e4e5c5-851c-4bdc-8516-fc689d0c3554'
 const HOURGLASS_ICON = 'https://www.figma.com/api/mcp/asset/20b722d2-9c02-4a3a-92f4-72721b6f4365'
 
 const DOCUMENTS = [
