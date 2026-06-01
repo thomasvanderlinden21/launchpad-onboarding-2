@@ -151,7 +151,7 @@ interface NavItemDef {
 }
 
 const TOP_NAV: NavItemDef[] = [
-  { id: 'home',         label: 'Home',             icon: <HomeIcon />,        route: '/dashboard' },
+  { id: 'home',         label: 'Home',             icon: <HomeIcon />,        route: '/' },
   { id: 'sales',        label: 'Sales',            icon: <CreditCardIcon /> },
   { id: 'terminals',    label: 'Terminals',        icon: <StorefrontIcon /> },
   { id: 'payments',     label: 'Payments',         icon: <SwapIcon /> },

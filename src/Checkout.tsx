@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from './Drawer'
 import { StepperContent } from './StepperContent'
@@ -53,6 +53,14 @@ const SWAP_ANIM = {
 }
 
 type Phase = 'form' | 'verification' | 'password' | 'company' | 'results' | 'selected' | 'edit' | 'summary' | 'payment' | 'success'
+
+const CHECKOUT_PHASE_ORDER: Phase[] = ['form', 'verification', 'password', 'company', 'results', 'selected', 'edit', 'summary', 'payment', 'success']
+
+function parsePhaseId(phaseId?: string): Phase | null {
+  if (!phaseId) return null
+  if (CHECKOUT_PHASE_ORDER.includes(phaseId as Phase)) return phaseId as Phase
+  return null
+}
 
 interface CompanyData {
   name: string; idNumber: string; street: string; number: string
@@ -1203,6 +1211,7 @@ function SuccessView({ onContinue, data }: { onContinue: () => void; data: Compa
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Checkout() {
+  const { phaseId } = useParams<{ phaseId?: string }>()
   const [phase, setPhase]             = useState<Phase>('form')
   const [currentStep, setCurrentStep] = useState(1)
   const [drawerOpen, setDrawerOpen]   = useState(false)
@@ -1219,6 +1228,23 @@ export default function Checkout() {
   const editRef     = useRef<HTMLDivElement>(null)
   const summaryRef  = useRef<HTMLDivElement>(null)
   const paymentRef  = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const parsed = parsePhaseId(phaseId)
+    if (!parsed) {
+      if (phaseId) navigate('/checkout/form', { replace: true })
+      return
+    }
+    if (parsed !== phase) {
+      setPhase(parsed)
+    }
+  }, [phaseId, phase, navigate])
+
+  useEffect(() => {
+    if (phaseId !== phase) {
+      navigate(`/checkout/${phase}`, { replace: true })
+    }
+  }, [phase, phaseId, navigate])
 
   // Scroll new bubble to top and record that position as the scroll ceiling
   useEffect(() => {
@@ -1277,10 +1303,9 @@ export default function Checkout() {
   }
 
   // Phase ordering — drives cumulative rendering
-  const PHASE_ORDER: Phase[] = ['form', 'verification', 'password', 'company', 'results', 'selected', 'edit', 'summary', 'payment', 'success']
-  const phaseIdx = PHASE_ORDER.indexOf(phase)
+  const phaseIdx = CHECKOUT_PHASE_ORDER.indexOf(phase)
   const is   = (p: Phase) => phase === p
-  const past = (p: Phase) => PHASE_ORDER.indexOf(p) < phaseIdx
+  const past = (p: Phase) => CHECKOUT_PHASE_ORDER.indexOf(p) < phaseIdx
 
   if (is('success')) {
     return (

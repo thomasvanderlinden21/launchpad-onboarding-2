@@ -9,7 +9,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const location = useLocation()
-  const isDashboard = location.pathname === '/dashboard' || location.pathname === '/sales'
+  const isDashboard = location.pathname === '/' || location.pathname === '/dashboard' || location.pathname === '/sales'
 
   return (
     <div

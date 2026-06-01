@@ -159,13 +159,13 @@ export default function Dashboard() {
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {/* Hero banner — asset to be added later */}
-        <div style={{ height: 220, width: '100%', backgroundColor: '#2563eb', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ height: 220, width: '100%', backgroundColor: '#fbbf24', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, color: '#9ca4a6', margin: 0, letterSpacing: '0.05em' }}>Banner placeholder</p>
         </div>
 
         {/* Progress tracker overlapping the banner */}
         <div style={{ padding: '0 32px 32px', marginTop: -88, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <ProgressTracker onActivate={() => navigate('/')} />
+          <ProgressTracker onActivate={() => navigate('/onboarding')} />
           <div>
             <button type="button" onClick={() => navigate('/checkout')}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: '#e6ebeb', border: '1px solid #b4b7bc', borderRadius: 4, paddingTop: 10, paddingBottom: 10, paddingLeft: 16, paddingRight: 16, cursor: 'pointer', boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.08)' }}>

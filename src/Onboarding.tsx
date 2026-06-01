@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState, type ReactNode } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Drawer } from './Drawer'
 import { Modal } from './Modal'
 import { StepperContent } from './StepperContent'
@@ -20,6 +20,16 @@ const STEP_TITLES = [
   'Connect your bank account',
   'Review and confirm',
 ]
+
+function parseStepId(stepId?: string): number | null {
+  if (!stepId) return null
+  const match = stepId.match(/^step-(\d+)$/)
+  if (!match) return null
+  const parsed = Number(match[1])
+  if (!Number.isFinite(parsed)) return null
+  if (parsed < 1 || parsed > TOTAL_STEPS) return null
+  return parsed
+}
 
 // ─── Progress ring ────────────────────────────────────────────────────────────
 
@@ -185,14 +195,29 @@ function StepContent({ step, onStepComplete, onFinish }: { step: number; onStepC
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Onboarding() {
+  const { stepId } = useParams<{ stepId?: string }>()
   const [currentStep, setCurrentStep] = useState(() => getResumeStep())
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [leaveModalOpen, setLeaveModalOpen] = useState(false)
   const navigate = useNavigate()
 
+  const stepFromUrl = parseStepId(stepId)
+
+  useEffect(() => {
+    if (stepFromUrl === null) {
+      navigate('/onboarding/step-1', { replace: true })
+      return
+    }
+    if (stepFromUrl !== currentStep) {
+      setCurrentStep(stepFromUrl)
+    }
+  }, [stepFromUrl, currentStep, navigate])
+
   const goNext = () => {
     markStepCompleted(currentStep)
-    setCurrentStep(s => Math.min(s + 1, TOTAL_STEPS))
+    const next = Math.min(currentStep + 1, TOTAL_STEPS)
+    setCurrentStep(next)
+    navigate(`/onboarding/step-${next}`)
   }
 
   const finishOnboarding = () => {
