@@ -4,8 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 const AI_BG   = '#e6f0ef'
 const USER_BG = '#dcf4fa'
 const EASE    = [0.22, 1, 0.36, 1] as const
-const imgRoleExplainer = 'https://www.figma.com/api/mcp/asset/337a87c3-e08e-49e2-a8f2-e3a959c3ca2c'
-const imgRolePlay = 'https://www.figma.com/api/mcp/asset/d4b9cde7-466b-40b3-a5d1-2236b78167e4'
 
 const EXIT_UP = {
   opacity: 0, y: -20,
@@ -158,11 +156,16 @@ function InfoCard({ businessName }: { businessName: string }) {
         What is a Signatory and UBO?
       </p>
 
-      <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden' }} aria-label={`Video explainer for ${businessName}`}>
-        <div style={{ width: '100%', aspectRatio: '472 / 179' }}>
-          <img src={imgRoleExplainer} alt="Signatory and UBO explainer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+
+      <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden', cursor: 'pointer' }}>
+        <img src="/images/thumbnail.png" alt="Signatory and UBO explainer" style={{ width: '100%', display: 'block' }} />
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 56, height: 56, borderRadius: 9999, backgroundColor: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width={24} height={24} viewBox="0 0 24 24" fill="white" aria-hidden="true">
+              <polygon points="5,3 19,12 5,21" />
+            </svg>
+          </div>
         </div>
-        <img src={imgRolePlay} alt="" aria-hidden="true" style={{ position: 'absolute', left: '50%', top: '50%', width: 74, height: 74, transform: 'translate(-50%, -50%)' }} />
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -320,24 +323,36 @@ const TRUSTEE_OPTIONS = [
 
 // ─── Identity bubble ──────────────────────────────────────────────────────────
 
-const imgIdNowBackground = 'https://www.figma.com/api/mcp/asset/e4fbcf1a-94aa-4ec2-8f9f-baecb1ab11d4'
-const imgIdNowObject = 'https://www.figma.com/api/mcp/asset/9eef35dd-a410-49b2-9629-f03a77ca017f'
-const imgReqIdCard = 'https://www.figma.com/api/mcp/asset/655667c1-c036-42c7-8fb7-7b50f3cb247f'
-const imgReqCamera = 'https://www.figma.com/api/mcp/asset/774d71b6-0d0c-4424-aa50-420774102f7b'
-const imgReqLight = 'https://www.figma.com/api/mcp/asset/1ffd343d-a8e8-4842-b7f5-f4c7e64015e3'
+const imgIdNowBackground = '/images/id-in-progress.png'
 
 const REQUIREMENTS = [
   {
     label: 'Valid passport or national ID card',
-    iconSrc: imgReqIdCard,
+    icon: (
+      <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x={2} y={5} width={20} height={14} rx={2} stroke="#525d5d" strokeWidth={1.5} />
+        <circle cx={8} cy={12} r={2.5} stroke="#525d5d" strokeWidth={1.5} />
+        <path d="M13 10h5M13 14h3" stroke="#525d5d" strokeWidth={1.5} strokeLinecap="round" />
+      </svg>
+    ),
   },
   {
     label: "Access to your smartphone's camera for selfie verification",
-    iconSrc: imgReqCamera,
+    icon: (
+      <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#525d5d" strokeWidth={1.5} strokeLinejoin="round" />
+        <circle cx={12} cy={13} r={4} stroke="#525d5d" strokeWidth={1.5} />
+      </svg>
+    ),
   },
   {
     label: 'Good lighting and a stable internet connection',
-    iconSrc: imgReqLight,
+    icon: (
+      <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx={12} cy={12} r={5} stroke="#525d5d" strokeWidth={1.5} />
+        <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="#525d5d" strokeWidth={1.5} strokeLinecap="round" />
+      </svg>
+    ),
   },
 ]
 
@@ -355,44 +370,18 @@ function IdentityBubble({ scrollRef, onBegin }: { scrollRef: React.RefObject<HTM
         {/* Info card */}
         <div style={{ backgroundColor: 'white', borderRadius: 8, boxShadow: '0px 4px 2px rgba(0,0,0,0.15)', padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', margin: 0 }}>What you'll need</p>
-          <div style={{ borderRadius: 12, overflow: 'hidden', backgroundColor: '#f5f7f7', height: 234, position: 'relative' }}>
+          <div style={{ borderRadius: 12, overflow: 'hidden', backgroundColor: '#f5f7f7', height: 234 }}>
             <img
               src={imgIdNowBackground}
-              alt=""
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                left: '-51.28%',
-                right: '-50.85%',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '202.13%',
-                height: '100%',
-                objectFit: 'cover',
-                maxWidth: 'none',
-              }}
-            />
-            <img
-              src={imgIdNowObject}
-              alt="IDnow verification screen"
-              style={{
-                position: 'absolute',
-                left: '48.29%',
-                right: '19.87%',
-                top: 'calc(50% + 79px)',
-                transform: 'translateY(-50%)',
-                width: '31.84%',
-                aspectRatio: '326 / 53',
-                objectFit: 'contain',
-                maxWidth: 'none',
-              }}
+              alt="IDnow identity verification"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {REQUIREMENTS.map((req, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', paddingBottom: i < REQUIREMENTS.length - 1 ? 24 : 0 }}>
                 <div style={{ width: 40, height: 40, flexShrink: 0, border: '1px solid #b4b7bc', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src={req.iconSrc} alt="" aria-hidden="true" style={{ width: 24, height: 24 }} />
+                  {req.icon}
                 </div>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', margin: 0 }}>{req.label}</p>
               </div>
@@ -440,11 +429,9 @@ function IdentityBubble({ scrollRef, onBegin }: { scrollRef: React.RefObject<HTM
 
 // ─── Scan bubble ─────────────────────────────────────────────────────────────
 
-const imgQrBackground  = 'https://www.figma.com/api/mcp/asset/236ec230-07ad-451f-81c2-1058b54875c3'
-const imgQrPhone       = 'https://www.figma.com/api/mcp/asset/4e04dba8-9475-40d2-a9c8-276fc1c7b497'
-const imgLoading       = 'https://www.figma.com/api/mcp/asset/ac484577-33c5-43e0-b11b-4bbd5b80ae8b'
-const imgSuccessBg     = 'https://www.figma.com/api/mcp/asset/310eb50b-0506-4cb1-a8e9-c40a88cc18c1'
-const imgSuccessOverlay = 'https://www.figma.com/api/mcp/asset/06c7a2a0-ade2-4a69-adb4-39748c6c488c'
+const imgScanCode  = '/images/scan-code.png'
+const imgLoading   = '/images/id-in-progress.png'
+const imgSuccess   = '/images/success-verify.png'
 
 type ScanState = 'idle' | 'scanning' | 'verified'
 
@@ -471,10 +458,9 @@ function ScanBubble({ scrollRef, onContinue }: { scrollRef: React.RefObject<HTML
                 type="button"
                 onClick={handleQrClick}
                 aria-label="Scan QR code to begin verification"
-                style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', height: 219, width: '100%', border: 'none', padding: 0, cursor: 'pointer', display: 'block' }}
+                style={{ borderRadius: 16, overflow: 'hidden', width: '100%', border: 'none', padding: 0, cursor: 'pointer', display: 'block' }}
               >
-                <img src={imgQrBackground} alt="" style={{ position: 'absolute', left: '-33.22%', top: '-52.96%', width: '165.57%', height: '178.04%', maxWidth: 'none' }} />
-                <img src={imgQrPhone} alt="" style={{ position: 'absolute', left: 38, top: 53, width: 61, height: 85 }} />
+                <img src={imgScanCode} alt="Scan QR code to begin verification" style={{ width: '100%', display: 'block' }} />
               </button>
             </motion.div>
           )}
@@ -483,8 +469,8 @@ function ScanBubble({ scrollRef, onContinue }: { scrollRef: React.RefObject<HTML
           {scanState === 'scanning' && (
             <motion.div key="scanning" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8, transition: { duration: 0.18 } }} transition={{ duration: 0.22 }} style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%' }}>
               <AiTitle>Identification in progress...</AiTitle>
-              <div style={{ position: 'relative', width: '100%', paddingTop: `${(179 / 512) * 100}%`, borderRadius: 12, overflow: 'hidden' }}>
-                <img src={imgLoading} alt="" style={{ position: 'absolute', left: '-52.41%', top: '-63.13%', width: '201.26%', height: '240.21%', maxWidth: 'none' }} />
+              <div style={{ borderRadius: 12, overflow: 'hidden', backgroundColor: '#f5f7f7' }}>
+                <img src={imgLoading} alt="" aria-hidden="true" style={{ width: '100%', display: 'block', objectFit: 'contain', maxHeight: 220 }} />
               </div>
               <BodyText>Please do not close this window while you are completing the identification process on mobile</BodyText>
             </motion.div>
@@ -494,19 +480,8 @@ function ScanBubble({ scrollRef, onContinue }: { scrollRef: React.RefObject<HTML
           {scanState === 'verified' && (
             <motion.div key="verified" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22 }} style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%' }}>
               <AiTitle>Success!</AiTitle>
-              <div style={{ borderRadius: 20, overflow: 'hidden', position: 'relative' }}>
-                {/* Top half */}
-                <div style={{ position: 'relative', width: '100%', paddingTop: `${(190 / 512) * 100}%`, overflow: 'hidden', borderRadius: '20px 20px 0 0' }}>
-                  <img src={imgSuccessBg} alt="" style={{ position: 'absolute', left: '-26.24%', top: '-68.35%', width: '148.47%', height: '313.45%', maxWidth: 'none' }} />
-                </div>
-                {/* Bottom half */}
-                <div style={{ position: 'relative', width: '100%', paddingTop: `${(117 / 512) * 100}%`, overflow: 'hidden', borderRadius: '0 0 20px 20px' }}>
-                  <img src={imgSuccessBg} alt="" style={{ position: 'absolute', left: '-26.24%', top: '-319.55%', width: '148.47%', height: '509.03%', maxWidth: 'none' }} />
-                </div>
-                {/* Centred overlay */}
-                <div style={{ position: 'absolute', top: 9, left: '50%', transform: 'translateX(-50%)', width: 342, height: 172, overflow: 'hidden' }}>
-                  <img src={imgSuccessOverlay} alt="" style={{ position: 'absolute', top: '-93.56%', left: 0, width: '100%', height: '430.32%', maxWidth: 'none' }} />
-                </div>
+              <div style={{ borderRadius: 20, overflow: 'hidden' }}>
+                <img src={imgSuccess} alt="Verification successful" style={{ width: '100%', display: 'block' }} />
               </div>
               <ContinueBtn onClick={onContinue} />
             </motion.div>
@@ -520,7 +495,14 @@ function ScanBubble({ scrollRef, onContinue }: { scrollRef: React.RefObject<HTML
 
 // ─── Step 1 ───────────────────────────────────────────────────────────────────
 
-interface Step1Props { onComplete: () => void }
+export interface Step1Result {
+  roleSummary: string
+  firstName: string
+  lastName: string
+  isSignatory: boolean
+  isUBO: boolean
+}
+interface Step1Props { onComplete: (result: Step1Result) => void }
 
 export function Step1({ onComplete }: Step1Props) {
   const businessName = 'Beantastic Coffee'
@@ -718,7 +700,7 @@ export function Step1({ onComplete }: Step1Props) {
           <AnimatePresence mode="popLayout">
             {is(phase, 'scan') && (
               <motion.div key="scan" exit={EXIT_UP} style={{ width: '100%' }}>
-                <ScanBubble scrollRef={scanRef} onContinue={onComplete} />
+                <ScanBubble scrollRef={scanRef} onContinue={() => onComplete({ roleSummary: buildRoleSummary(), firstName, lastName, isSignatory: isSignatory ?? false, isUBO: isUBO ?? false })} />
               </motion.div>
             )}
           </AnimatePresence>

@@ -99,7 +99,7 @@ export default function Basket() {
 
       {/* ── Top nav ── */}
       <header style={{ backgroundColor: 'white', borderBottom: '1px solid #e8e8e8', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {/* Logo */}
           <img src="/images/worldline-logo.svg" alt="Worldline" style={{ height: 28, objectFit: 'contain' }} />
 
@@ -125,7 +125,7 @@ export default function Basket() {
       </header>
 
       {/* ── Breadcrumb ── */}
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '12px 24px', width: '100%', boxSizing: 'border-box' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '12px 24px', width: '100%', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {['Home', 'All devices', 'Basket'].map((crumb, i, arr) => (
             <div key={crumb} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -137,7 +137,7 @@ export default function Basket() {
       </div>
 
       {/* ── Main content ── */}
-      <main style={{ maxWidth: 960, margin: '0 auto', padding: '8px 24px 48px', width: '100%', boxSizing: 'border-box', display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '8px 24px 48px', width: '100%', boxSizing: 'border-box', display: 'flex', gap: 24, alignItems: 'flex-start' }}>
 
         {/* Left column */}
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -236,7 +236,7 @@ export default function Basket() {
         </div>
 
         {/* Order summary — sticky */}
-        <div style={{ width: 280, flexShrink: 0, position: 'sticky', top: 72 }}>
+        <div style={{ width: 320, flexShrink: 0, position: 'sticky', top: 72 }}>
           <div style={{ backgroundColor: 'white', border: '1px solid #e8e8e8', borderRadius: 8, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <h2 style={{ fontSize: 16, fontWeight: 600, color: '#121621', margin: 0 }}>Order Summary</h2>
 
@@ -284,7 +284,7 @@ export default function Basket() {
 
       {/* ── Footer ── */}
       <footer style={{ backgroundColor: '#1a1a1a', marginTop: 'auto' }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 12, color: '#9ca4a6' }}>© 2026 Worldline. All rights reserved.</span>
           <div style={{ display: 'flex', gap: 20 }}>
             {['Privacy', 'Terms', 'Contact'].map(link => (

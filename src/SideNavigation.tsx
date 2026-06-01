@@ -151,21 +151,21 @@ interface NavItemDef {
 }
 
 const TOP_NAV: NavItemDef[] = [
-  { id: 'home',         label: 'Home',             icon: <HomeIcon />,        route: '/' },
-  { id: 'sales',        label: 'Sales',            icon: <CreditCardIcon /> },
-  { id: 'terminals',    label: 'Terminals',        icon: <StorefrontIcon /> },
-  { id: 'payments',     label: 'Payments',         icon: <SwapIcon /> },
-  { id: 'catalogue',    label: 'Product catalogue', icon: <TagIcon /> },
-  { id: 'business',     label: 'My business',      icon: <ApartmentIcon /> },
-  { id: 'card-issuing', label: 'Card issuing',     icon: <CreditCardIcon /> },
-  { id: 'cash-advance', label: 'Cash advance',     icon: <WrenchIcon /> },
+  { id: 'home',         label: 'Home',             icon: <HomeIcon />,        route: '/dashboard' },
+  { id: 'sales',        label: 'Sales',            icon: <CreditCardIcon />,  route: '/sales' },
+  { id: 'terminals',    label: 'Terminals',        icon: <StorefrontIcon />,  route: '/terminals' },
+  { id: 'payments',     label: 'Payments',         icon: <SwapIcon />,        route: '/payments' },
+  { id: 'catalogue',    label: 'Product catalogue', icon: <TagIcon />,        route: '/catalogue' },
+  { id: 'business',     label: 'My business',      icon: <ApartmentIcon />,  route: '/business' },
+  { id: 'card-issuing', label: 'Card issuing',     icon: <CreditCardIcon />, route: '/card-issuing' },
+  { id: 'cash-advance', label: 'Cash advance',     icon: <WrenchIcon />,     route: '/cash-advance' },
 ]
 
 const BOTTOM_NAV = [
-  { id: 'settings',      label: 'Settings',      icon: <SettingsIcon /> },
-  { id: 'notifications', label: 'Notifications', icon: <BellIcon /> },
-  { id: 'help',          label: 'Help',          icon: <HelpIcon /> },
-  { id: 'ai',            label: 'AI assistant',  icon: <SparkleIcon /> },
+  { id: 'settings',      label: 'Settings',      icon: <SettingsIcon />, route: '/settings' },
+  { id: 'notifications', label: 'Notifications', icon: <BellIcon />,     route: '/notifications' },
+  { id: 'help',          label: 'Help',          icon: <HelpIcon />,     route: '/help' },
+  { id: 'ai',            label: 'AI assistant',  icon: <SparkleIcon />,  route: '/ai' },
 ]
 
 // ─── Sub-nav panel ────────────────────────────────────────────────────────────
@@ -297,7 +297,8 @@ export function SideNavigation() {
   }
 
   // Derive active main item from current route
-  const activeMainId = TOP_NAV.find(item => item.route === location.pathname)?.id ?? 'home'
+  const activeMainId = TOP_NAV.find(item => item.route === location.pathname)?.id
+    ?? (location.pathname === '/' || location.pathname === '/dashboard' ? 'home' : null)
 
   return (
     <nav
@@ -435,6 +436,7 @@ export function SideNavigation() {
                   <button
                     key={item.id}
                     type="button"
+                    onClick={() => item.route && navigate(item.route)}
                     style={{ flex: '1 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, padding: '4px 8px', borderRadius: 4, backgroundColor: 'transparent', border: 'none', cursor: 'pointer', minWidth: 0 }}
                   >
                     {item.icon}
@@ -456,6 +458,7 @@ export function SideNavigation() {
                   <button
                     key={item.id}
                     type="button"
+                    onClick={() => item.route && navigate(item.route)}
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8, borderRadius: 4, backgroundColor: 'transparent', border: 'none', cursor: 'pointer' }}
                   >
                     {item.icon}

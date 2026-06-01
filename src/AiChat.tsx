@@ -4,7 +4,7 @@ import { useConversationScroll } from './hooks/useConversationScroll'
 
 type ChatMode = 'closed' | 'compact' | 'expanded'
 
-const AI_BUBBLE_COLOR = '#8fcfaa'
+const AI_BUBBLE_COLOR = '#C7E5DF'
 const EASE = [0.22, 1, 0.36, 1] as const
 
 const SUGGESTION = 'Where can I find my business identification number?'
@@ -124,7 +124,7 @@ function ThinkingDots() {
       <div style={{ backgroundColor: AI_BUBBLE_COLOR, borderRadius: '0px 12px 12px 12px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 5, filter: 'drop-shadow(0px 3px 2px rgba(0,0,0,0.08))' }}>
         {[0, 1, 2].map(i => (
           <motion.div key={i} animate={{ y: [0, -5, 0] }} transition={{ duration: 0.55, repeat: Infinity, delay: i * 0.16, ease: 'easeInOut' }}
-            style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: '#1a5c3a', opacity: 0.65 }} />
+            style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: '#277777', opacity: 0.65 }} />
         ))}
       </div>
     </motion.div>
@@ -286,7 +286,7 @@ function ChatPanel({ mode, onHide, onExpand, onClose }: ChatPanelProps) {
   }, [isExpanded, thinking, onExpand])
 
   return (
-    <div style={{ backgroundColor: '#e6f0ef', border: '1px solid #e6ebeb', borderRadius: 12, boxShadow: '0px 8px 40px rgba(0,0,0,0.14)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ backgroundColor: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 12, boxShadow: '0px 8px 40px rgba(0,0,0,0.14)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
       {/* Header — slides open when expanding */}
       <AnimatePresence initial={false}>

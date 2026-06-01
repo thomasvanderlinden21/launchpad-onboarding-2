@@ -108,24 +108,26 @@ function DocumentTile({ label, isFirst, isLast }: { label: string; isFirst: bool
   )
 }
 
-function PrimaryBtn({ label, onClick }: { label: string; onClick: () => void }) {
+function PrimaryBtn({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       style={{
         minHeight: 40,
         backgroundColor: '#277777',
         border: '1px solid #277777',
         borderRadius: 4,
         padding: '8px 10px',
-        cursor: 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         fontFamily: 'Inter, sans-serif',
         fontSize: 16,
         fontWeight: 500,
         lineHeight: '22px',
         color: '#ffffff',
         boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.16)',
+        opacity: disabled ? 0.5 : 1,
       }}
     >
       {label}
@@ -135,6 +137,7 @@ function PrimaryBtn({ label, onClick }: { label: string; onClick: () => void }) 
 
 export function Step5({ onComplete }: Step5Props) {
   const [phase, setPhase] = useState<Phase>('review')
+  const [confirmed, setConfirmed] = useState(false)
 
   return (
     <div style={{ width: '100%', paddingBottom: 32 }}>
@@ -153,17 +156,24 @@ export function Step5({ onComplete }: Step5Props) {
                 ))}
               </div>
 
-              <div style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <div style={{ width: 16, height: 16, borderRadius: 4, backgroundColor: '#277777', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                  <img src={CHECK_ICON} alt="" aria-hidden="true" style={{ width: 12, height: 12 }} />
+              <label style={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
+                <div
+                  onClick={() => setConfirmed(v => !v)}
+                  style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 2, border: `1px solid ${confirmed ? '#277777' : '#b4b7bc'}`, backgroundColor: confirmed ? '#277777' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                >
+                  {confirmed && (
+                    <svg width={10} height={10} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M2 6l3 3 5-5" stroke="white" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
                 </div>
                 <p style={{ margin: 0, fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, lineHeight: '18px', color: '#525d5d' }}>
                   I confirm that I have reviewed all documents, agree to all the contractual terms, and confirm that the beneficial owner(s) information provided are true, accurate and complete.
                 </p>
-              </div>
+              </label>
 
               <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-                <PrimaryBtn label="I agree, submit now" onClick={() => setPhase('submitted')} />
+                <PrimaryBtn label="I agree, submit now" onClick={() => setPhase('submitted')} disabled={!confirmed} />
               </div>
             </AiBubble>
           </motion.div>

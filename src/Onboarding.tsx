@@ -1,17 +1,20 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { Drawer } from './Drawer'
 import { Modal } from './Modal'
 import { StepperContent } from './StepperContent'
 import { AiChatWidget } from './AiChat'
-import { Step1 } from './steps/Step1'
-import { Step2 } from './steps/Step2'
-import { Step3 } from './steps/Step3'
-import { Step4 } from './steps/Step4'
+import { Step1, type Step1Result } from './steps/Step1'
+import { Step2, type Step2Individual } from './steps/Step2'
+import { Step3, type Step3Data } from './steps/Step3'
+import { Step4, type Step4Data } from './steps/Step4'
 import { Step5 } from './steps/Step5'
 import { getResumeStep, markStepCompleted } from './onboardingProgress'
 
 const TOTAL_STEPS = 5
+const EASE = [0.22, 1, 0.36, 1] as const
+const T: React.CSSProperties = { fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px' }
 
 const STEP_TITLES = [
   'Verify your identity',
@@ -21,65 +24,97 @@ const STEP_TITLES = [
   'Review and confirm',
 ]
 
-function parseStepId(stepId?: string): number | null {
-  if (!stepId) return null
-  const match = stepId.match(/^step-(\d+)$/)
-  if (!match) return null
-  const parsed = Number(match[1])
-  if (!Number.isFinite(parsed)) return null
-  if (parsed < 1 || parsed > TOTAL_STEPS) return null
-  return parsed
+// ─── Smooth scroll ────────────────────────────────────────────────────────────
+
+function scrollTo(container: HTMLDivElement, to: number, duration = 460) {
+  const from = container.scrollTop
+  const delta = to - from
+  if (delta === 0) return
+  const start = performance.now()
+  const tick = (now: number) => {
+    const t = Math.min((now - start) / duration, 1)
+    const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+    container.scrollTop = from + delta * ease
+    if (t < 1) requestAnimationFrame(tick)
+  }
+  requestAnimationFrame(tick)
+}
+
+// ─── Compact user bubble (with optional edit on hover) ────────────────────────
+
+function UserAvatar() {
+  return (
+    <div style={{ position: 'absolute', top: -12, right: -9, width: 17, height: 17, borderRadius: 9999, backgroundColor: '#066076', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+      <svg width={10} height={10} viewBox="0 0 10 10" fill="none" aria-hidden="true">
+        <circle cx={5} cy={3.5} r={2} fill="white" />
+        <path d="M1 9c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="white" strokeWidth={1} strokeLinecap="round" />
+      </svg>
+    </div>
+  )
+}
+
+function EditIcon() {
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function CompactUserBubble({ children, onEdit }: { children: React.ReactNode; onEdit?: () => void }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}
+    >
+      {onEdit && (
+        <motion.button
+          type="button"
+          onClick={onEdit}
+          animate={{ opacity: hovered ? 1 : 0, scale: hovered ? 1 : 0.85 }}
+          transition={{ duration: 0.15 }}
+          aria-label="Edit this step"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 9999, backgroundColor: '#e6f0ef', border: '1px solid #c8ddd9', color: '#277777', cursor: 'pointer', flexShrink: 0, pointerEvents: hovered ? 'auto' : 'none' }}
+        >
+          <EditIcon />
+        </motion.button>
+      )}
+      <div style={{ position: 'relative', backgroundColor: '#dcf4fa', borderRadius: '12px 0 12px 12px', padding: 12, filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))' }}>
+        <UserAvatar />
+        {children}
+      </div>
+    </div>
+  )
 }
 
 // ─── Progress ring ────────────────────────────────────────────────────────────
 
-interface ProgressLineProps {
-  current: number
-  total: number
-  onClick?: () => void
-}
-
-function ProgressLine({ current, total, onClick }: ProgressLineProps) {
+function ProgressLine({ current, total, onClick }: { current: number; total: number; onClick?: () => void }) {
   const radius = 16
   const strokeWidth = 3.5
   const circumference = 2 * Math.PI * radius
   const dashOffset = circumference * (1 - current / total)
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={`Step ${current} of ${total} — open steps overview`}
-      style={{
-        position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        width: 40, height: 40, flexShrink: 0,
-        background: 'none', border: 'none', padding: 0,
-        cursor: 'pointer', borderRadius: '50%',
-      }}
-    >
+    <button type="button" onClick={onClick} aria-label={`Step ${current} of ${total} — open steps overview`}
+      style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, flexShrink: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer', borderRadius: '50%' }}>
       <svg width={40} height={40} viewBox="0 0 40 40" fill="none" aria-hidden="true" style={{ position: 'absolute', inset: 0 }}>
         <circle cx={20} cy={20} r={radius} stroke="#e6ebeb" strokeWidth={strokeWidth} fill="none" />
-        <circle
-          cx={20} cy={20} r={radius}
-          stroke="#0D6E6E" strokeWidth={strokeWidth} fill="none"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={dashOffset}
-          transform="rotate(-90 20 20)"
-          style={{ transition: 'stroke-dashoffset 0.4s ease' }}
-        />
+        <circle cx={20} cy={20} r={radius} stroke="#0D6E6E" strokeWidth={strokeWidth} fill="none"
+          strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashOffset}
+          transform="rotate(-90 20 20)" style={{ transition: 'stroke-dashoffset 0.4s ease' }} />
       </svg>
-      <span
-        className="relative z-10 select-none"
-        style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 400, lineHeight: '16px', color: '#121621', pointerEvents: 'none' }}
-      >
+      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 400, lineHeight: '16px', color: '#121621', position: 'relative', zIndex: 1, pointerEvents: 'none' }}>
         {current}/{total}
       </span>
     </button>
   )
 }
 
-// ─── Chevron back ─────────────────────────────────────────────────────────────
+// ─── Toolbar ─────────────────────────────────────────────────────────────────
 
 function CloseIcon() {
   return (
@@ -89,145 +124,122 @@ function CloseIcon() {
   )
 }
 
-// ─── Toolbar ─────────────────────────────────────────────────────────────────
-
-interface ToolbarProps {
-  title?: string
-  currentStep: number
-  totalSteps: number
-  onBack?: () => void
-  onStepperClick?: () => void
-}
-
-function Toolbar({ title = 'Page title', currentStep, totalSteps, onBack, onStepperClick }: ToolbarProps) {
+function Toolbar({ title = 'Onboarding', currentStep, totalSteps, onBack, onStepperClick }: {
+  title?: string; currentStep: number; totalSteps: number; onBack?: () => void; onStepperClick?: () => void
+}) {
   return (
-    <header
-      className="sticky top-0 z-10 w-full flex items-center shrink-0"
-      style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e6ebeb', paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, minHeight: 56 }}
-    >
-      {/* Left — back button */}
-      <div className="flex items-center shrink-0" style={{ minWidth: 40, minHeight: 40 }}>
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="Go back"
-          className="flex items-center justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0D6E6E]"
-          style={{ minWidth: 44, minHeight: 44 }}
-        >
+    <header className="sticky top-0 z-10 w-full flex items-center shrink-0"
+      style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e6ebeb', paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, minHeight: 56 }}>
+      <div style={{ minWidth: 40, minHeight: 40, display: 'flex', alignItems: 'center' }}>
+        <button type="button" onClick={onBack} aria-label="Leave onboarding"
+          style={{ minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4 }}>
           <CloseIcon />
         </button>
       </div>
-
-      {/* Center — step title */}
-      <div className="flex flex-1 items-center justify-center px-2">
-        <p
-          className="whitespace-nowrap text-center"
-          style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621' }}
-        >
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', margin: 0 }}>
           {title}
         </p>
       </div>
-
-      {/* Right — progress ring */}
-      <div className="flex items-center shrink-0" style={{ minWidth: 40 }}>
+      <div style={{ minWidth: 40, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
         <ProgressLine current={currentStep} total={totalSteps} onClick={onStepperClick} />
       </div>
     </header>
   )
 }
 
-// ─── Content area ─────────────────────────────────────────────────────────────
-
-// Placeholder content for steps not yet implemented
-function PlaceholderContent({ heading, subtitle, children }: { heading: string; subtitle: string; children?: ReactNode }) {
-  return (
-    <main className="w-full shrink-0" style={{ maxWidth: 800, paddingLeft: 16, paddingRight: 16 }}>
-      <div className="flex flex-col items-start w-full" style={{ gap: 8 }}>
-        <h1 className="w-full" style={{ fontFamily: 'Inter, sans-serif', fontSize: 24, fontWeight: 500, lineHeight: '32px', color: '#121621', margin: 0 }}>{heading}</h1>
-        <p className="w-full" style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, lineHeight: '18px', color: '#525d5d', margin: 0 }}>{subtitle}</p>
-      </div>
-      {children}
-    </main>
-  )
-}
-
-function StepContent({ step, onStepComplete, onFinish }: { step: number; onStepComplete: () => void; onFinish: () => void }) {
-  if (step === 1) {
-    return (
-      <div style={{ width: '100%', maxWidth: 600 }}>
-        <Step1 onComplete={onStepComplete} />
-      </div>
-    )
-  }
-  if (step === 2) {
-    return (
-      <div style={{ width: '100%', maxWidth: 600 }}>
-        <Step2 onComplete={onStepComplete} />
-      </div>
-    )
-  }
-  if (step === 3) {
-    return (
-      <div style={{ width: '100%', maxWidth: 600 }}>
-        <Step3 onComplete={onStepComplete} />
-      </div>
-    )
-  }
-  if (step === 4) {
-    return (
-      <div style={{ width: '100%', maxWidth: 600 }}>
-        <Step4 onComplete={onStepComplete} />
-      </div>
-    )
-  }
-  if (step === 5) {
-    return (
-      <div style={{ width: '100%', maxWidth: 600 }}>
-        <Step5 onComplete={onFinish} />
-      </div>
-    )
-  }
-  return (
-    <PlaceholderContent heading="Place your content here" subtitle={`Step ${step} — coming soon`} />
-  )
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Onboarding() {
-  const { stepId } = useParams<{ stepId?: string }>()
   const [currentStep, setCurrentStep] = useState(() => getResumeStep())
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [leaveModalOpen, setLeaveModalOpen] = useState(false)
   const navigate = useNavigate()
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const activeStepRef = useRef<HTMLDivElement>(null)
 
-  const stepFromUrl = parseStepId(stepId)
+  // Step completion data — persisted to localStorage so history survives navigation
+  const [step1Result, setStep1Result] = useState<Step1Result | null>(() => {
+    try { return JSON.parse(localStorage.getItem('ob_step1') || 'null') } catch { return null }
+  })
+  const [step2Data, setStep2Data] = useState<Step2Individual[] | null>(() => {
+    try { return JSON.parse(localStorage.getItem('ob_step2') || 'null') } catch { return null }
+  })
+  const [step3Data, setStep3Data] = useState<Step3Data | null>(() => {
+    try { return JSON.parse(localStorage.getItem('ob_step3') || 'null') } catch { return null }
+  })
+  const [step4Data, setStep4Data] = useState<Step4Data | null>(() => {
+    try { return JSON.parse(localStorage.getItem('ob_step4') || 'null') } catch { return null }
+  })
 
   useEffect(() => {
-    if (stepFromUrl === null) {
-      navigate('/onboarding/step-1', { replace: true })
-      return
-    }
-    if (stepFromUrl !== currentStep) {
-      setCurrentStep(stepFromUrl)
-    }
-  }, [stepFromUrl, currentStep, navigate])
+    if (currentStep === 1) return
+    const container = scrollContainerRef.current
+    const el = activeStepRef.current
+    if (!container || !el) return
+    const id = requestAnimationFrame(() => {
+      const t = setTimeout(() => {
+        const containerTop = container.getBoundingClientRect().top
+        const elTop = el.getBoundingClientRect().top
+        const target = Math.max(0, container.scrollTop + (elTop - containerTop) - 48)
+        scrollTo(container, target)
+      }, 180)
+      return () => clearTimeout(t)
+    })
+    return () => cancelAnimationFrame(id)
+  }, [currentStep])
 
-  const goNext = () => {
-    markStepCompleted(currentStep)
-    const next = Math.min(currentStep + 1, TOTAL_STEPS)
-    setCurrentStep(next)
-    navigate(`/onboarding/step-${next}`)
+  function clearOb(keys: string[]) { keys.forEach(k => localStorage.removeItem(k)) }
+
+  function goToStep(step: number) {
+    setCurrentStep(step)
+    if (step <= 1) {
+      setStep1Result(null); clearOb(['ob_step1'])
+      setStep2Data(null);   clearOb(['ob_step2'])
+    }
+    if (step < 3) { setStep3Data(null); clearOb(['ob_step3']) }
+    if (step < 4) { setStep4Data(null); clearOb(['ob_step4']) }
   }
 
-  const finishOnboarding = () => {
-    markStepCompleted(TOTAL_STEPS)
+  function handleStep1Complete(result: Step1Result) {
+    setStep1Result(result)
+    localStorage.setItem('ob_step1', JSON.stringify(result))
+    markStepCompleted(1); setCurrentStep(2)
+  }
+
+  function buildSelfIndividual(r: Step1Result): Step2Individual {
+    const roles: string[] = []
+    if (r.isSignatory) roles.push('Signatory')
+    if (r.isUBO) roles.push('UBO')
+    return { name: `${r.firstName} ${r.lastName}`.trim(), detail: roles.join(' and ') || 'Key individual' }
+  }
+
+  function handleStep2Complete(individuals: Step2Individual[]) {
+    setStep2Data(individuals)
+    localStorage.setItem('ob_step2', JSON.stringify(individuals))
+    markStepCompleted(2); setCurrentStep(3)
+  }
+
+  function handleStep3Complete(data: Step3Data) {
+    setStep3Data(data)
+    localStorage.setItem('ob_step3', JSON.stringify(data))
+    markStepCompleted(3); setCurrentStep(4)
+  }
+
+  function handleStep4Complete(data: Step4Data) {
+    setStep4Data(data)
+    localStorage.setItem('ob_step4', JSON.stringify(data))
+    markStepCompleted(4); setCurrentStep(5)
+  }
+
+  function handleStep5Complete() {
+    markStepCompleted(5)
+    clearOb(['ob_step1', 'ob_step2', 'ob_step3', 'ob_step4'])
     navigate('/dashboard')
   }
 
   return (
     <>
-      {/* Inner content only — AppShell provides the card */}
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center' }}>
         <Toolbar
           title={STEP_TITLES[currentStep - 1]}
@@ -236,8 +248,90 @@ export default function Onboarding() {
           onBack={() => setLeaveModalOpen(true)}
           onStepperClick={() => setDrawerOpen(true)}
         />
-        <div style={{ flex: 1, width: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 32, paddingBottom: 32 }}>
-          <StepContent step={currentStep} onStepComplete={goNext} onFinish={finishOnboarding} />
+
+        <div
+          ref={scrollContainerRef}
+          style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 600, overflowY: 'auto', overflowAnchor: 'none', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 16, paddingTop: 48, paddingBottom: 'calc(100vh - 104px)' }}
+        >
+          {/* ── Step 1 ── */}
+          {currentStep === 1 && (
+            <div ref={activeStepRef} style={{ width: '100%', scrollMarginTop: 48 }}>
+              <Step1 onComplete={handleStep1Complete} />
+            </div>
+          )}
+          {currentStep > 1 && step1Result && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: EASE }}>
+              <CompactUserBubble>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, color: '#121621', margin: 0, textAlign: 'right' }}>{step1Result.roleSummary}</p>
+              </CompactUserBubble>
+            </motion.div>
+          )}
+
+          {/* ── Step 2 ── */}
+          {currentStep === 2 && (
+            <div ref={activeStepRef} style={{ width: '100%', scrollMarginTop: 48 }}>
+              <Step2
+                onComplete={handleStep2Complete}
+                selfIndividual={step1Result ? buildSelfIndividual(step1Result) : undefined}
+                initialData={step2Data ?? undefined}
+              />
+            </div>
+          )}
+          {currentStep > 2 && step2Data && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: EASE }}>
+              <CompactUserBubble onEdit={() => goToStep(2)}>
+                {step2Data.map((ind, i) => (
+                  <div key={i} style={{ textAlign: 'right', marginBottom: i < step2Data.length - 1 ? 8 : 0 }}>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, color: '#121621', margin: 0 }}>{ind.name}</p>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, color: '#525d5d', margin: 0 }}>{ind.detail}</p>
+                  </div>
+                ))}
+              </CompactUserBubble>
+            </motion.div>
+          )}
+
+          {/* ── Step 3 ── */}
+          {currentStep === 3 && (
+            <div ref={activeStepRef} style={{ width: '100%', scrollMarginTop: 48 }}>
+              <Step3 onComplete={handleStep3Complete} />
+            </div>
+          )}
+          {currentStep > 3 && step3Data && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: EASE }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <CompactUserBubble onEdit={() => goToStep(3)}>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, color: '#121621', margin: 0, textAlign: 'right' }}>{step3Data.salesLocation}</p>
+                </CompactUserBubble>
+                <CompactUserBubble onEdit={() => goToStep(3)}>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, color: '#121621', margin: 0, textAlign: 'right' }}>{step3Data.category}</p>
+                </CompactUserBubble>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Step 4 ── */}
+          {currentStep === 4 && (
+            <div ref={activeStepRef} style={{ width: '100%', scrollMarginTop: 48 }}>
+              <Step4 onComplete={handleStep4Complete} />
+            </div>
+          )}
+          {currentStep > 4 && step4Data && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: EASE }}>
+              <CompactUserBubble>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, color: '#121621', margin: 0, textAlign: 'right' }}>Bank account connected</p>
+                {step4Data.accountLabel && (
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, color: '#525d5d', margin: '2px 0 0', textAlign: 'right' }}>{step4Data.accountLabel}</p>
+                )}
+              </CompactUserBubble>
+            </motion.div>
+          )}
+
+          {/* ── Step 5 ── */}
+          {currentStep === 5 && (
+            <div ref={activeStepRef} style={{ width: '100%', scrollMarginTop: 48 }}>
+              <Step5 onComplete={handleStep5Complete} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -254,18 +348,7 @@ export default function Onboarding() {
         onCancel={() => setLeaveModalOpen(false)}
         onConfirm={() => navigate('/dashboard', { state: { back: true } })}
       >
-        <p
-          style={{
-            fontFamily: 'Inter, sans-serif',
-            fontSize: 16,
-            fontWeight: 400,
-            lineHeight: '22px',
-            color: '#121621',
-            textAlign: 'center',
-            width: '100%',
-            margin: 0,
-          }}
-        >
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#121621', textAlign: 'center', width: '100%', margin: 0 }}>
           You can safely leave this process now and pick up your account activation whenever you're ready.
         </p>
       </Modal>

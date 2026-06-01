@@ -2,70 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCompletedStep, subscribeToOnboardingProgress } from './onboardingProgress'
 
-// ─── Icons (toolbar only) ─────────────────────────────────────────────────────
-
-function SearchIcon() {
-  return (
-    <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" stroke="#121621" strokeWidth={1.5} />
-      <path d="M16.5 16.5L21 21" stroke="#121621" strokeWidth={1.5} strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function ChevronRightIcon({ color = '#121621' }: { color?: string }) {
-  return (
-    <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M9 18l6-6-6-6" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M6 9l6 6 6-6" stroke="#121621" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-// ─── Toolbar ──────────────────────────────────────────────────────────────────
-
-function Toolbar() {
-  const crumbs = [{ label: 'Home', current: true }]
-
-  return (
-    <header style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: '#ffffff', borderBottom: '1px solid #e6ebeb', paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, minHeight: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0 }}>
-      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', minHeight: 40, minWidth: 40 }}>
-        {crumbs.map((crumb, i) => (
-          <div key={crumb.label} style={{ display: 'flex', alignItems: 'center' }}>
-            {i > 0 && <ChevronRightIcon color={crumb.current ? '#6b7676' : '#121621'} />}
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: crumb.current ? '#6b7676' : '#121621', whiteSpace: 'nowrap' }}>
-              {crumb.label}
-            </span>
-          </div>
-        ))}
-      </nav>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 24, minHeight: 40, flexShrink: 0 }}>
-        <button type="button" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: 2 }}>
-          <SearchIcon />
-          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', padding: '0 2px' }}>Search</span>
-        </button>
-        <button type="button" style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0, borderRadius: 2, height: 32 }}>
-          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', padding: '0 2px' }}>beantastic coffee</span>
-          <ChevronDownIcon />
-        </button>
-        <div style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-          <div style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: '#277777', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 400, lineHeight: '16px', color: 'white' }}>JA</span>
-          </div>
-        </div>
-      </div>
-    </header>
-  )
-}
-
 // ─── Progress tracker ─────────────────────────────────────────────────────────
 
 type StepStatus = 'todo' | 'in-progress' | 'done' | 'pending'
@@ -103,7 +39,7 @@ function ProgressTracker({ onActivate }: { onActivate: () => void }) {
   }, [])
 
   return (
-    <div style={{ backgroundColor: 'white', border: '1px solid #e6ebeb', borderRadius: 8, boxShadow: '0px 4px 2px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: 32, padding: '32px 20px', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ backgroundColor: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 8, boxShadow: '0px 4px 24px rgba(0,0,0,0.10)', display: 'flex', flexDirection: 'column', gap: 32, padding: '32px 20px', width: '100%', boxSizing: 'border-box' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
@@ -149,6 +85,101 @@ function ProgressTracker({ onActivate }: { onActivate: () => void }) {
   )
 }
 
+// ─── Shipping Status ──────────────────────────────────────────────────────────
+
+type OrderStep = { label: string; sub: string; state: 'done' | 'active' | 'todo' }
+
+const ORDER_STEPS: OrderStep[] = [
+  { label: 'Payment received',  sub: 'Order number #WL123547',                              state: 'done'   },
+  { label: 'Shipment',          sub: 'Package being prepared',                              state: 'active' },
+  { label: 'Shipping address',  sub: 'Chaussee de Haecht 1442, 1130, Brussels, Belgium',    state: 'todo'   },
+]
+
+function StepIcon({ state }: { state: OrderStep['state'] }) {
+  if (state === 'done') {
+    return (
+      <div style={{ width: 24, height: 24, borderRadius: 9999, backgroundColor: '#277777', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width={14} height={14} viewBox="0 0 14 14" fill="none">
+          <path d="M2.5 7L5.5 10L11.5 4" stroke="white" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+    )
+  }
+  if (state === 'active') {
+    return (
+      <div style={{ width: 24, height: 24, borderRadius: 9999, backgroundColor: '#f5f7f7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 0 2px white, 0 0 0 4px #277777' }}>
+        <div style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: '#1f5c5c' }} />
+      </div>
+    )
+  }
+  return (
+    <div style={{ width: 24, height: 24, borderRadius: 9999, backgroundColor: '#f5f7f7', border: '1px solid #9ca4a6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: '#9ca4a6' }} />
+    </div>
+  )
+}
+
+function ShippingStatus() {
+  return (
+    <div style={{ flex: 1, minWidth: 0, backgroundColor: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 8, boxShadow: '0px 4px 24px rgba(0,0,0,0.10)', padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <p style={{ fontFamily: 'Raleway, Inter, sans-serif', fontSize: 24, fontWeight: 500, lineHeight: '32px', color: '#121621', margin: 0 }}>
+        Shipping status
+      </p>
+      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+        {/* Stepper */}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          {ORDER_STEPS.map((step, i) => (
+            <div key={step.label} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+              {/* Icon + connector */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: 4, alignSelf: 'stretch', flexShrink: 0 }}>
+                <StepIcon state={step.state} />
+                {i < ORDER_STEPS.length - 1 && (
+                  <div style={{ flex: 1, width: 2, backgroundColor: step.state === 'done' ? '#277777' : '#e6ebeb', margin: '2px 0' }} />
+                )}
+              </div>
+              {/* Text */}
+              <div style={{ flex: 1, paddingBottom: i < ORDER_STEPS.length - 1 ? 24 : 0, paddingTop: 2 }}>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', margin: 0 }}>
+                  {step.label}
+                </p>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, lineHeight: '18px', color: '#525d5d', margin: 0 }}>
+                  {step.sub}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Terminal image */}
+        <div style={{ width: 160, height: 209, flexShrink: 0, overflow: 'hidden', borderRadius: 8 }}>
+          <img src="/images/link-2500.png" alt="Worldline Link 2500 terminal" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Discover Launchpad ───────────────────────────────────────────────────────
+
+function DiscoverLaunchpad() {
+  return (
+    <div style={{ width: 531, flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 8, boxShadow: '0px 4px 24px rgba(0,0,0,0.10)', padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <p style={{ fontFamily: 'Raleway, Inter, sans-serif', fontSize: 24, fontWeight: 500, lineHeight: '32px', color: '#121621', margin: 0, whiteSpace: 'nowrap' }}>
+        Discover your Launchpad
+      </p>
+      {/* Video thumbnail */}
+      <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', backgroundColor: '#f5f5f7' }}>
+        <img src="/images/thumbnail.png" alt="Launchpad overview video" style={{ width: '100%', height: 235, objectFit: 'cover', display: 'block' }} />
+        {/* Play button */}
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 74, height: 74, borderRadius: 9999, backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <svg width={28} height={28} viewBox="0 0 28 28" fill="none">
+            <path d="M10 8L22 14L10 20V8Z" fill="#121621" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -156,8 +187,6 @@ export default function Dashboard() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Toolbar />
-
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {/* Hero banner */}
         <div style={{ height: 220, width: '100%', flexShrink: 0, overflow: 'hidden' }}>
@@ -167,6 +196,12 @@ export default function Dashboard() {
         {/* Progress tracker overlapping the banner */}
         <div style={{ padding: '0 32px 32px', marginTop: -88, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <ProgressTracker onActivate={() => navigate('/onboarding')} />
+
+          {/* Two-column row */}
+          <div style={{ display: 'flex', gap: 10, alignItems: 'stretch' }}>
+            <ShippingStatus />
+            <DiscoverLaunchpad />
+          </div>
         </div>
       </div>
     </div>

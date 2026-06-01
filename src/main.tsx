@@ -9,6 +9,7 @@ import Checkout from './Checkout.tsx'
 import Basket from './Basket.tsx'
 import { AppShell } from './AppShell.tsx'
 import { getResumeStep } from './onboardingProgress'
+import { SalesPage, TerminalsPage, PaymentsPage, CataloguePage, BusinessPage, CardIssuingPage, CashAdvancePage, SettingsPage, NotificationsPage, HelpPage, AiAssistantPage } from './EmptyPages.tsx'
 
 function ResumeOnboarding() {
   return <Navigate to={`/onboarding/step-${getResumeStep()}`} replace />
@@ -24,7 +25,17 @@ function App() {
         <Route path="/onboarding" element={<ResumeOnboarding />} />
         <Route path="/onboarding/:stepId" element={<Onboarding />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/sales" element={<Sales />} />
+        <Route path="/sales" element={<SalesPage />} />
+        <Route path="/terminals" element={<TerminalsPage />} />
+        <Route path="/payments" element={<PaymentsPage />} />
+        <Route path="/catalogue" element={<CataloguePage />} />
+        <Route path="/business" element={<BusinessPage />} />
+        <Route path="/card-issuing" element={<CardIssuingPage />} />
+        <Route path="/cash-advance" element={<CashAdvancePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/ai" element={<AiAssistantPage />} />
         <Route path="/basket" element={<Basket />} />
         <Route path="/checkout" element={<Navigate to="/checkout/form" replace />} />
         <Route path="/checkout/:phaseId" element={<Checkout />} />

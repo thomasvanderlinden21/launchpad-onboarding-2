@@ -6,18 +6,26 @@ const USER_BG = '#dcf4fa'
 const EASE = [0.22, 1, 0.36, 1] as const
 const T: React.CSSProperties = { fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px' }
 
-type Phase = 'bank-login' | 'authorize' | 'connecting' | 'success'
+type Phase = 'select-bank' | 'bank-login' | 'authorize' | 'connecting' | 'success'
 
+export interface Step4Data { bankName: string; bankLogo: string; accountLabel: string }
 interface Step4Props {
-  onComplete: () => void
+  onComplete: (data: Step4Data) => void
 }
 
-// Exact references from the four requested Figma nodes:
-// 40008477:46505, 40008477:46718, 40008477:46965, 40008477:47230
-const SCREEN_LOGIN = 'https://www.figma.com/api/mcp/asset/2d9e22b1-6844-4098-bcb5-8971324245b8'
-const SCREEN_AUTHORIZE = 'https://www.figma.com/api/mcp/asset/b700ad1c-178c-4b87-acb1-dcdc559c3f9a'
-const SCREEN_CONNECTING = 'https://www.figma.com/api/mcp/asset/a89679af-9985-4dff-a598-df970b124a34'
-const SCREEN_SUCCESS = 'https://www.figma.com/api/mcp/asset/b265cb04-33ab-458f-bf3e-2c016aa14f47'
+const SCREEN_LOGIN     = '/images/connect-bank-01.png'
+const SCREEN_AUTHORIZE = '/images/connect-bank-02.png'
+const SCREEN_CONNECTING = '/images/connect-bank-03.png'
+const SCREEN_SUCCESS   = '/images/connect-bank-04.png'
+
+const BANKS = [
+  { id: 'ing',            name: 'ING',            logo: '/images/ing.png' },
+  { id: 'abn-amro',       name: 'ABN Amro',       logo: '/images/abn-amro.png' },
+  { id: 'handelsbanken',  name: 'Handelsbanken',  logo: '/images/handelsbanken.png' },
+  { id: 'revolut',        name: 'Revolut',        logo: '/images/revolut.png' },
+  { id: 'triodos',        name: 'Triodos',        logo: '/images/triodos.png' },
+  { id: 'yoursafe',       name: 'Yoursafe',       logo: '/images/yoursafe.png' },
+]
 
 function AiAvatar() {
   return (
@@ -93,16 +101,134 @@ function PrimaryBtn({ label, onClick, disabled }: { label: string; onClick: () =
   )
 }
 
-function ScreenImage({ src, alt, height }: { src: string; alt: string; height: number }) {
+function ScreenImage({ src, alt, height, onClick }: { src: string; alt: string; height: number; onClick?: () => void }) {
   return (
-    <div style={{ width: 493, maxWidth: '100%', backgroundColor: 'white', border: '1px solid #d9d9d9', borderRadius: 4, overflow: 'hidden' }}>
+    <div
+      onClick={onClick}
+      style={{ width: 493, maxWidth: '100%', backgroundColor: 'white', border: '1px solid #d9d9d9', borderRadius: 4, overflow: 'hidden', cursor: onClick ? 'pointer' : 'default' }}
+    >
       <img src={src} alt={alt} style={{ width: '100%', height, display: 'block', objectFit: 'cover', objectPosition: 'top' }} />
     </div>
   )
 }
 
+const ACCOUNTS = [
+  { id: '8976', label: 'Account number ending in ...8976' },
+  { id: '1292', label: 'Account number ending in ...1292' },
+  { id: '0912', label: 'Account number ending in ...0912' },
+]
+
+function AuthorizeScreen({ bankLogo, onAuthorize, onDecline }: {
+  bankLogo: string
+  onAuthorize: (accountLabel: string) => void
+  onDecline: () => void
+}) {
+  const [selectedAccount, setSelectedAccount] = useState<string | null>(null)
+  const [termsChecked, setTermsChecked] = useState(false)
+  const canAuthorize = selectedAccount !== null && termsChecked
+
+  return (
+    <div style={{ width: 493, maxWidth: '100%', backgroundColor: 'white', border: '1px solid #d9d9d9', borderRadius: 4, overflow: 'hidden', fontFamily: 'Inter, sans-serif' }}>
+      {/* Bank header */}
+      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e8e8e8' }}>
+        <img src={bankLogo} alt="Bank" style={{ height: 32, objectFit: 'contain' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ fontSize: 12, color: '#333', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="#333" strokeWidth={1.5} strokeLinejoin="round" />
+            </svg>
+            Give feedback
+          </span>
+          <span style={{ fontSize: 12, color: '#333' }}>NL | <strong>EN</strong></span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: '#1a1a1a', margin: 0, lineHeight: '26px' }}>
+          Worldline would like to access your account information
+        </h2>
+
+        {/* Worldline logo card */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 20, border: '1px solid #e8e8e8', borderRadius: 8 }}>
+          <img src="/images/worldline-logo.svg" alt="Worldline" style={{ height: 64, objectFit: 'contain' }} />
+        </div>
+
+        {/* Description */}
+        <p style={{ fontSize: 13, color: '#333', margin: 0, lineHeight: '20px' }}>
+          To be transparent about how your data is shared. ING will your data with our trusted partner <strong>Plaid</strong>. Worldline will retrieve your data from Plaid.
+        </p>
+
+        {/* Account radio options */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {ACCOUNTS.map(acc => (
+            <button
+              key={acc.id}
+              type="button"
+              onClick={() => setSelectedAccount(acc.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px', textAlign: 'left',
+                border: `1px solid ${selectedAccount === acc.id ? '#ff5400' : '#d9d9d9'}`,
+                borderRadius: 4, background: 'white', cursor: 'pointer', width: '100%',
+              }}
+            >
+              <span style={{
+                width: 18, height: 18, borderRadius: 9999, flexShrink: 0,
+                border: `2px solid ${selectedAccount === acc.id ? '#ff5400' : '#aaa'}`,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {selectedAccount === acc.id && (
+                  <span style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: '#ff5400' }} />
+                )}
+              </span>
+              <span style={{ fontSize: 14, color: '#1a1a1a' }}>{acc.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Terms checkbox */}
+        <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={termsChecked}
+            onChange={e => setTermsChecked(e.target.checked)}
+            style={{ marginTop: 2, cursor: 'pointer', flexShrink: 0, accentColor: '#ff5400' }}
+          />
+          <span style={{ fontSize: 12, color: '#333', lineHeight: '18px' }}>
+            I confirm that I have reviewed and agree to the{' '}
+            <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>Terms and Conditions</span>.{' '}
+            I am specifically directing ING to send my account information to Worldline via Plaid on my behalf whenever requested by Worldline. I understand that ING will continue to do this until access expires or I ask ING to stop.
+          </span>
+        </label>
+
+        {/* Buttons */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+          <button
+            type="button"
+            onClick={onDecline}
+            style={{ padding: '10px 24px', border: '1px solid #d9d9d9', borderRadius: 4, background: 'white', cursor: 'pointer', fontSize: 14, fontWeight: 500, color: '#1a1a1a' }}
+          >
+            Decline
+          </button>
+          <button
+            type="button"
+            onClick={() => onAuthorize(ACCOUNTS.find(a => a.id === selectedAccount)?.label ?? '')}
+            disabled={!canAuthorize}
+            style={{ padding: '10px 24px', border: 'none', borderRadius: 4, background: canAuthorize ? '#ff5400' : '#ffb380', cursor: canAuthorize ? 'pointer' : 'not-allowed', fontSize: 14, fontWeight: 700, color: 'white' }}
+          >
+            Authorize
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function Step4({ onComplete }: Step4Props) {
-  const [phase, setPhase] = useState<Phase>('bank-login')
+  const [phase, setPhase] = useState<Phase>('select-bank')
+  const [selectedBank, setSelectedBank] = useState<string | null>(null)
+  const [selectedAccountLabel, setSelectedAccountLabel] = useState('')
 
   useEffect(() => {
     if (phase !== 'connecting') return
@@ -110,39 +236,69 @@ export function Step4({ onComplete }: Step4Props) {
     return () => window.clearTimeout(id)
   }, [phase])
 
+  const selectedBankName = BANKS.find(b => b.id === selectedBank)?.name ?? 'Bank'
+
   return (
     <div style={{ width: '100%', paddingBottom: 32 }}>
       <AnimatePresence mode="wait">
-        {phase === 'bank-login' && (
-          <motion.div key="bank-login" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
-            <UserBubble text="ING Bank selected" />
+
+        {phase === 'select-bank' && (
+          <motion.div key="select-bank" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
             <AiBubble>
               <AiTitle>Connect your bank account</AiTitle>
-              <ScreenImage src={SCREEN_LOGIN} alt="Bank login screen" height={790} />
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <PrimaryBtn label="Continue" onClick={() => setPhase('authorize')} />
+              <p style={{ ...T, color: '#121621', margin: 0 }}>Select your bank to connect your account and receive payouts.</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                {BANKS.map(bank => (
+                  <button
+                    key={bank.id}
+                    type="button"
+                    onClick={() => { setSelectedBank(bank.id); setPhase('bank-login') }}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: 16,
+                      backgroundColor: selectedBank === bank.id ? '#e6f0ef' : 'white',
+                      border: `1px solid ${selectedBank === bank.id ? '#277777' : '#e6ebeb'}`,
+                      borderRadius: 8,
+                      cursor: 'pointer',
+                      transition: 'border-color 0.15s, background-color 0.15s',
+                    }}
+                  >
+                    <img src={bank.logo} alt={bank.name} style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 8 }} />
+                    <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 500, color: '#121621', textAlign: 'center' }}>{bank.name}</span>
+                  </button>
+                ))}
               </div>
+            </AiBubble>
+          </motion.div>
+        )}
+
+        {phase === 'bank-login' && (
+          <motion.div key="bank-login" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
+            <AiBubble>
+              <AiTitle>Connect your bank account</AiTitle>
+              <ScreenImage src={SCREEN_LOGIN} alt="Bank login screen" height={790} onClick={() => setPhase('authorize')} />
             </AiBubble>
           </motion.div>
         )}
 
         {phase === 'authorize' && (
           <motion.div key="authorize" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
-            <UserBubble text="ING Bank selected" />
             <AiBubble>
               <AiTitle>Connect your bank account</AiTitle>
-              <ScreenImage src={SCREEN_AUTHORIZE} alt="Authorization screen" height={790} />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                <button type="button" onClick={() => setPhase('bank-login')} style={{ minHeight: 40, border: '1px solid #b4b7bc', backgroundColor: '#e6ebeb', borderRadius: 4, padding: '8px 10px', fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#121621', cursor: 'pointer' }}>Decline</button>
-                <button type="button" onClick={() => setPhase('connecting')} style={{ minHeight: 40, border: '1px solid #ff5400', backgroundColor: '#ff5400', borderRadius: 4, padding: '8px 10px', fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#ffffff', cursor: 'pointer', boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.16)' }}>Authorize</button>
-              </div>
+              <AuthorizeScreen
+                bankLogo={BANKS.find(b => b.id === selectedBank)?.logo ?? '/images/ing.png'}
+                onAuthorize={(label) => { setSelectedAccountLabel(label); setPhase('connecting') }}
+                onDecline={() => setPhase('bank-login')}
+              />
             </AiBubble>
           </motion.div>
         )}
 
         {phase === 'connecting' && (
           <motion.div key="connecting" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
-            <UserBubble text="ING Bank selected" />
             <AiBubble>
               <AiTitle>Connect your bank account</AiTitle>
               <ScreenImage src={SCREEN_CONNECTING} alt="Connecting screen" height={579} />
@@ -152,22 +308,16 @@ export function Step4({ onComplete }: Step4Props) {
 
         {phase === 'success' && (
           <motion.div key="success" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
-            <UserBubble text="ING Bank selected" />
             <AiBubble>
               <AiTitle>Connect your bank account</AiTitle>
-              <ScreenImage src={SCREEN_SUCCESS} alt="Success screen" height={579} />
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={onComplete}
-                  style={{ minHeight: 40, border: '1px solid #ff5400', backgroundColor: '#ff5400', borderRadius: 4, padding: '8px 10px', fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#ffffff', cursor: 'pointer', boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.16)' }}
-                >
-                  Continue
-                </button>
-              </div>
+              <ScreenImage src={SCREEN_SUCCESS} alt="Success screen" height={579} onClick={() => {
+                const bank = BANKS.find(b => b.id === selectedBank)
+                if (bank) onComplete({ bankName: bank.name, bankLogo: bank.logo, accountLabel: selectedAccountLabel })
+              }} />
             </AiBubble>
           </motion.div>
         )}
+
       </AnimatePresence>
     </div>
   )
