@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from './Drawer'
+import { Modal } from './Modal'
 import { StepperContent } from './StepperContent'
 import { AiChatWidget } from './AiChat'
 
@@ -1194,6 +1195,7 @@ export default function Checkout() {
   const [phase, setPhase]             = useState<Phase>('form')
   const [currentStep, setCurrentStep] = useState(1)
   const [drawerOpen, setDrawerOpen]   = useState(false)
+  const [quitOpen,   setQuitOpen]     = useState(false)
   const [accountData, setAccountData]   = useState<AccountForm | null>(null)
   const [companyQuery, setCompanyQuery] = useState('')
   const [companyData, setCompanyData]       = useState<CompanyData>(DEFAULT_COMPANY)
@@ -1277,7 +1279,7 @@ export default function Checkout() {
         <Toolbar
           currentStep={currentStep}
           totalSteps={TOTAL_STEPS}
-          onBack={() => navigate('/dashboard', { state: { back: true } })}
+          onBack={() => setQuitOpen(true)}
           onStepperClick={() => setDrawerOpen(true)}
         />
         <div ref={scrollContainerRef} style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 600, overflowY: 'auto', overflowAnchor: 'none', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 48, paddingTop: 48, paddingBottom: 'calc(100vh - 104px)' }}>
@@ -1435,6 +1437,20 @@ export default function Checkout() {
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title="Checkout">
         <StepperContent currentStep={currentStep} steps={CHECKOUT_STEPS} />
       </Drawer>
+
+      <Modal
+        open={quitOpen}
+        onClose={() => setQuitOpen(false)}
+        title="Leave checkout?"
+        cancelLabel="Stay"
+        confirmLabel="Leave"
+        onCancel={() => setQuitOpen(false)}
+        onConfirm={() => navigate('/basket')}
+      >
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#525d5d', margin: 0 }}>
+          Your progress will be lost if you leave now. Are you sure you want to go back to your basket?
+        </p>
+      </Modal>
 
       <AiChatWidget />
     </>
