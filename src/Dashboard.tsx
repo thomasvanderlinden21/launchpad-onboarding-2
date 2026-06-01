@@ -68,12 +68,13 @@ function Toolbar() {
 
 // ─── Progress tracker ─────────────────────────────────────────────────────────
 
-type StepStatus = 'todo' | 'in-progress' | 'done'
+type StepStatus = 'todo' | 'in-progress' | 'done' | 'pending'
 
 const STATUS_STYLES: Record<StepStatus, { bg: string; color: string; label: string }> = {
   'done':        { bg: '#e6f0ef', color: '#277777', label: 'Done' },
   'in-progress': { bg: '#fff3cd', color: '#7a5500', label: 'In progress' },
   'todo':        { bg: '#dcf4fa', color: '#066076', label: 'To do' },
+  'pending':     { bg: '#e6f0ef', color: '#277777', label: 'Pending review' },
 }
 
 const STEPS: { n: number; title: string; desc: string }[] = [
@@ -86,7 +87,7 @@ const STEPS: { n: number; title: string; desc: string }[] = [
 
 function deriveStatus(stepNumber: number, completedStep: number): StepStatus {
   if (completedStep === 0) return 'todo'
-  if (stepNumber <= completedStep) return 'done'
+  if (stepNumber <= completedStep) return 'pending'
   if (stepNumber === completedStep + 1) return 'in-progress'
   return 'todo'
 }
@@ -158,16 +159,16 @@ export default function Dashboard() {
       <Toolbar />
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {/* Hero banner — asset to be added later */}
-        <div style={{ height: 220, width: '100%', backgroundColor: '#fbbf24', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, color: '#9ca4a6', margin: 0, letterSpacing: '0.05em' }}>Banner placeholder</p>
+        {/* Hero banner */}
+        <div style={{ height: 220, width: '100%', flexShrink: 0, overflow: 'hidden' }}>
+          <img src="/images/banner.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
         </div>
 
         {/* Progress tracker overlapping the banner */}
         <div style={{ padding: '0 32px 32px', marginTop: -88, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <ProgressTracker onActivate={() => navigate('/onboarding')} />
           <div>
-            <button type="button" onClick={() => navigate('/checkout')}
+            <button type="button" onClick={() => navigate('/basket')}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: '#e6ebeb', border: '1px solid #b4b7bc', borderRadius: 4, paddingTop: 10, paddingBottom: 10, paddingLeft: 16, paddingRight: 16, cursor: 'pointer', boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.08)' }}>
               <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#121621' }}>Checkout</span>
               <svg width={16} height={16} viewBox="0 0 20 20" fill="none" aria-hidden="true">

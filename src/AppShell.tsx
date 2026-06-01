@@ -9,7 +9,12 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const location = useLocation()
+  const isBasket = location.pathname === '/basket'
   const isDashboard = location.pathname === '/' || location.pathname === '/dashboard' || location.pathname === '/sales'
+
+  if (isBasket) {
+    return <>{children}</>
+  }
 
   return (
     <div
@@ -65,10 +70,10 @@ export function AppShell({ children }: AppShellProps) {
             minHeight: 0,
           }}
         >
-          {/* Content — cross-fades between routes */}
+          {/* Content — cross-fades between routes (keyed on top-level segment only) */}
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
-              key={location.pathname}
+              key={'/' + location.pathname.split('/')[1]}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from './Drawer'
 import { StepperContent } from './StepperContent'
@@ -53,6 +53,15 @@ const SWAP_ANIM = {
 }
 
 type Phase = 'form' | 'verification' | 'password' | 'company' | 'results' | 'selected' | 'edit' | 'summary' | 'payment' | 'success'
+
+interface OrderItem {
+  id: string
+  name: string
+  subtitle: string
+  price: number
+  quantity: number
+  img: string
+}
 
 const CHECKOUT_PHASE_ORDER: Phase[] = ['form', 'verification', 'password', 'company', 'results', 'selected', 'edit', 'summary', 'payment', 'success']
 
@@ -329,6 +338,9 @@ function VerificationBubble({ data, onEmailClick, onEditName }: { data: AccountF
         <UserBubble onEdit={onEditName}>
           <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>
             {data.firstName} {data.lastName}
+          </p>
+          <p style={{ ...T, color: '#525d5d', margin: 0, textAlign: 'right' }}>
+            {data.email}
           </p>
         </UserBubble>
       </motion.div>
@@ -779,8 +791,6 @@ function CompanyEditBubble({ scrollRef, onBack, onSave, data }: {
 
 // ─── Step 2 — Summary ────────────────────────────────────────────────────────
 
-const imgLowCostDevice = 'https://www.figma.com/api/mcp/asset/2287ea97-d32a-40c3-8324-f7abaf67e802'
-const imgLowCostDock   = 'https://www.figma.com/api/mcp/asset/ac0e58d4-bc83-43bc-9865-2f7c83249520'
 const Sm: React.CSSProperties = { fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, lineHeight: '18px' }
 
 const PAY_WHEN_OPTIONS = [
@@ -788,52 +798,30 @@ const PAY_WHEN_OPTIONS = [
   { id: 'later', label: 'Pay later', desc: 'Verify your identity now' },
 ]
 
-// Figma payment asset URLs
-const imgApplePayLogo  = 'https://www.figma.com/api/mcp/asset/b9331e7a-8c06-4af6-8090-96c7756babf9'
-const imgGPayText      = 'https://www.figma.com/api/mcp/asset/5b7f35ca-26d7-4df0-87f2-dfbe636f3e93'
-const imgGPayG         = 'https://www.figma.com/api/mcp/asset/d6cb3233-1006-4488-8475-4b2f9bb1d554'
-const imgPayPalLogo    = 'https://www.figma.com/api/mcp/asset/b4dd9af2-d7b2-45fb-b149-eeed7689dd36'
-const imgLockIcon      = 'https://www.figma.com/api/mcp/asset/0498cc2e-a3ef-4bc0-aaf4-c77ed952573f'
-const imgCloseIcon     = 'https://www.figma.com/api/mcp/asset/03a408b4-57b4-4368-a466-eb6c82e638ba'
-const imgCalendarIcon  = 'https://www.figma.com/api/mcp/asset/76dee00b-ef13-4d80-b129-c6dcac83bea8'
-const imgHelpCircle    = 'https://www.figma.com/api/mcp/asset/62a16288-8093-4009-9303-1b13e0eeda45'
-const imgRefreshCwIcon = 'https://www.figma.com/api/mcp/asset/2cbf883d-deac-4e52-bd36-05bfe351122d'
-const imgPackageIcon   = 'https://www.figma.com/api/mcp/asset/4e4f9983-8c37-41b2-8110-c35d8780fee4'
-const imgLockBadge     = 'https://www.figma.com/api/mcp/asset/4f9d644e-1640-4e6d-a29b-f6f068d41d67'
-
 const CARD_LOGOS = [
-  { src: 'https://www.figma.com/api/mcp/asset/f004da1c-0142-4434-97ff-58101fb9d202', alt: 'Visa',       bg: 'white' },
-  { src: 'https://www.figma.com/api/mcp/asset/2fb429da-9fbe-4f0a-808f-16c438d7d1a4', alt: 'Mastercard', bg: 'white' },
-  { src: 'https://www.figma.com/api/mcp/asset/f157eae9-8818-4c7e-9f2a-6466c774b04e', alt: 'Maestro',    bg: 'white' },
-  { src: 'https://www.figma.com/api/mcp/asset/16373b5d-2aeb-4e01-b5e2-2e550564ce48', alt: 'Amex',       bg: '#1f72cd' },
-  { src: 'https://www.figma.com/api/mcp/asset/6c2d0aa3-0d23-4948-abb3-418da53e5ee7', alt: 'Bancontact', bg: 'white' },
-  { src: 'https://www.figma.com/api/mcp/asset/a213937d-fbf0-4eeb-be77-137684b7985d', alt: 'JCB',        bg: 'white' },
-  { src: 'https://www.figma.com/api/mcp/asset/c9b1d6b7-95b1-41f1-a586-561e9a7e586f', alt: 'Discover',   bg: 'white' },
-  { src: 'https://www.figma.com/api/mcp/asset/6c178ba2-dec5-4e05-afff-446489c1cfb1', alt: 'UnionPay',   bg: 'white' },
-  { src: 'https://www.figma.com/api/mcp/asset/6e809dfc-5fc1-4f14-b221-b664c6756aed', alt: 'Diners',     bg: 'white' },
+  { src: '/images/payment/visa.png',       alt: 'Visa',       bg: 'white' },
+  { src: '/images/payment/mastercard.png', alt: 'Mastercard', bg: 'white' },
+  { src: '/images/payment/maestro.png',    alt: 'Maestro',    bg: 'white' },
+  { src: '/images/payment/amex.png',       alt: 'Amex',       bg: 'white' },
+  { src: '/images/payment/bancontact.png', alt: 'Bancontact', bg: 'white' },
+  { src: '/images/payment/jcb.png',        alt: 'JCB',        bg: 'white' },
+  { src: '/images/payment/discover.png',   alt: 'Discover',   bg: 'white' },
+  { src: '/images/payment/unionpay.png',   alt: 'UnionPay',   bg: 'white' },
+  { src: '/images/payment/diners.png',     alt: 'Diners',     bg: 'white' },
 ]
 
 const PAY_TABS = [
-  { id: 'card',      content: (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth={1.5}/><path d="M2 10h20" stroke="currentColor" strokeWidth={1.5}/></svg>
-      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px' }}>Card</span>
-    </div>
-  )},
-  { id: 'applepay',  content: <div style={{ position: 'relative', width: 40, height: 24 }}><img src={imgApplePayLogo} alt="Apple Pay" style={{ position: 'absolute', inset: '20% 10% 24% 10%', width: '80%', height: '56%', objectFit: 'contain' }} /></div> },
-  { id: 'googlepay', content: (
-    <div style={{ position: 'relative', width: 40, height: 24 }}>
-      <img src={imgGPayG}    alt="" style={{ position: 'absolute', top: '25%', left: '10%', width: '35%', height: '50%', objectFit: 'contain' }} />
-      <img src={imgGPayText} alt="Google Pay" style={{ position: 'absolute', top: '28%', left: '44%', right: '10%', height: '44%', objectFit: 'contain' }} />
-    </div>
-  )},
-  { id: 'paypal',    content: <div style={{ position: 'relative', width: 40, height: 24 }}><img src={imgPayPalLogo} alt="PayPal" style={{ position: 'absolute', inset: '29% 10% 26% 10%', width: '80%', height: '45%', objectFit: 'contain' }} /></div> },
+  { id: 'card',      content: <img src="/images/payment/card.png"      alt="Card"       style={{ width: 20, height: 20, objectFit: 'contain' }} /> },
+  { id: 'applepay',  content: <img src="/images/payment/applepay.png"  alt="Apple Pay"  style={{ height: 18, objectFit: 'contain' }} /> },
+  { id: 'googlepay', content: <img src="/images/payment/googlepay.png" alt="Google Pay" style={{ height: 18, objectFit: 'contain' }} /> },
+  { id: 'paypal',    content: <img src="/images/payment/paypal.png"    alt="PayPal"     style={{ height: 16, objectFit: 'contain' }} /> },
 ]
 
-function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
+function SummaryBubble({ scrollRef, data, account, orderItems, onPayment, onEditCompany }: {
   scrollRef: React.RefObject<HTMLDivElement | null>
   data: CompanyData
   account: AccountForm
+  orderItems: OrderItem[]
   onPayment: (label: string) => void
   onEditCompany: () => void
 }) {
@@ -846,11 +834,14 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
 
   const firstName = account.firstName.charAt(0).toUpperCase() + account.firstName.slice(1)
   const address = `${data.street} ${data.number}, ${data.postcode}, ${data.city}, Belgium`
+  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const vat      = Math.round(subtotal * 0.2 * 100) / 100
+  const total    = subtotal + vat
 
   return (
     <div ref={scrollRef} style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%', scrollMarginTop: 48 }}>
 
-      {/* User bubble — company name confirmation */}
+      {/* User bubble — company name */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -858,6 +849,19 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
       >
         <UserBubble onEdit={onEditCompany}>
           <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{data.name}</p>
+        </UserBubble>
+      </motion.div>
+
+      {/* User bubble — shipping address */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.18, ease: EASE, delay: 0.12 }}
+      >
+        <UserBubble onEdit={onEditCompany}>
+          <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{data.street} {data.number}</p>
+          <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{data.postcode} {data.city}</p>
+          <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>Belgium</p>
         </UserBubble>
       </motion.div>
 
@@ -872,49 +876,26 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
           {/* Order items */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-            {/* Product 1 */}
-            <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-              <div style={{ width: 96, height: 107, backgroundColor: '#f5f5f7', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                <img src={imgLowCostDevice} alt="Link 2500" style={{ width: 91, height: 101, objectFit: 'contain' }} />
-              </div>
-              <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <p style={{ ...T, color: '#121621', margin: 0 }}>Link 2500</p>
-                  <p style={{ ...Sm, color: '#525d5d', margin: 0 }}>Hand held terminal</p>
-                  <p style={{ ...Sm, color: '#525d5d', margin: 0 }}>Connectivity: Bluetooth + WiFi</p>
+            {orderItems.map(item => (
+              <div key={item.id} style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+                <div style={{ width: 96, height: 96, backgroundColor: '#f5f5f7', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                  <img src={item.img} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 8, boxSizing: 'border-box' }} />
                 </div>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, fontWeight: 500, lineHeight: '24px', color: '#1d1d1f', margin: 0, whiteSpace: 'nowrap' }}>€89</p>
-              </div>
-            </div>
-
-            {/* Product 2 */}
-            <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-              <div style={{ width: 96, height: 107, backgroundColor: '#f5f5f7', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                <img src={imgLowCostDock} alt="Charging station" style={{ width: 86, height: 68, objectFit: 'contain' }} />
-              </div>
-              <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <p style={{ ...T, color: '#121621', margin: 0 }}>Charging station</p>
-                  <p style={{ ...Sm, color: '#6b7676', margin: 0 }}>Bundle offer</p>
+                <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <p style={{ ...T, color: '#121621', margin: 0 }}>{item.name}</p>
+                    <p style={{ ...Sm, color: '#525d5d', margin: 0 }}>{item.subtitle}</p>
+                    {item.quantity > 1 && <p style={{ ...Sm, color: '#525d5d', margin: 0 }}>Qty: {item.quantity}</p>}
+                  </div>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, fontWeight: 500, lineHeight: '24px', color: '#1d1d1f', margin: 0, whiteSpace: 'nowrap' }}>€{(item.price * item.quantity).toFixed(2)}</p>
                 </div>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, fontWeight: 500, lineHeight: '24px', color: '#1d1d1f', margin: 0, whiteSpace: 'nowrap' }}>€26</p>
               </div>
-            </div>
-
-            {/* Ship to */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', margin: 0 }}>Ship to:</p>
-                <p style={{ ...Sm, color: '#525d5d', margin: 0 }}>{data.name}</p>
-                <p style={{ ...Sm, color: '#525d5d', margin: 0 }}>{address}</p>
-              </div>
-              <button type="button" style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', background: 'none', border: 'none', cursor: 'pointer', padding: 0, whiteSpace: 'nowrap' }}>Edit</button>
-            </div>
+            ))}
 
             {/* Price breakdown */}
             <div style={{ borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[['Subtotal', '€92'], ['VAT (20%)', '€23'], ['Shipping', 'Free']].map(([label, value]) => (
+                {[['Subtotal', `€${subtotal.toFixed(2)}`], ['VAT (20%)', `€${vat.toFixed(2)}`], ['Shipping', 'Free']].map(([label, value]) => (
                   <div key={label} style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <p style={{ ...Sm, color: '#525d5d', margin: 0 }}>{label}</p>
                     <p style={{ ...Sm, color: '#1d1d1f', margin: 0 }}>{value}</p>
@@ -923,7 +904,7 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
               </div>
               <div style={{ borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: 16, display: 'flex', justifyContent: 'space-between' }}>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, fontWeight: 500, lineHeight: '24px', color: '#121621', margin: 0 }}>Total</p>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, fontWeight: 500, lineHeight: '24px', color: '#121621', margin: 0 }}>€115</p>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, fontWeight: 500, lineHeight: '24px', color: '#121621', margin: 0 }}>€{total.toFixed(2)}</p>
               </div>
             </div>
           </div>
@@ -997,7 +978,7 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
                       <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', border: '1px solid #e6ebeb', borderRadius: 4, padding: '12px 12px', gap: 8 }}>
                         <input value={cardNumber} onChange={e => { const d = e.target.value.replace(/\D/g,'').slice(0,16); setCardNumber(d.replace(/(.{4})/g,'$1 ').trim()) }} placeholder="1234 5678 9012 3456"
                           style={{ ...T, flex: 1, minWidth: 0, background: 'none', border: 'none', outline: 'none', color: '#6b7676' }} />
-                        <img src={imgLockIcon} alt="" style={{ width: 20, height: 20, flexShrink: 0, objectFit: 'contain' }} />
+                        <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, color: '#9ca4a6' }}><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth={1.5}/><path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round"/></svg>
                       </div>
                     </div>
                     {/* Cardholder name */}
@@ -1006,7 +987,7 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
                       <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', border: '1px solid #e6ebeb', borderRadius: 4, padding: '12px 12px', gap: 8 }}>
                         <input value={cardHolder} onChange={e => setCardHolder(e.target.value)} placeholder="Alex Carter"
                           style={{ ...T, flex: 1, minWidth: 0, background: 'none', border: 'none', outline: 'none', color: '#121621' }} />
-                        <img src={imgCloseIcon} alt="" style={{ width: 16, height: 16, flexShrink: 0, objectFit: 'contain', cursor: 'pointer' }} onClick={() => setCardHolder('')} />
+                        <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, cursor: 'pointer', color: '#9ca4a6' }} onClick={() => setCardHolder('')}><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round"/></svg>
                       </div>
                     </div>
                     {/* Expiry + CVV */}
@@ -1016,7 +997,7 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
                         <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', border: '1px solid #e6ebeb', borderRadius: 4, padding: '8px 8px', gap: 8 }}>
                           <input value={expiry} onChange={e => { const d = e.target.value.replace(/\D/g,'').slice(0,4); setExpiry(d.length > 2 ? `${d.slice(0,2)}/${d.slice(2)}` : d) }} placeholder="DD/MM"
                             style={{ ...T, flex: 1, minWidth: 0, background: 'none', border: 'none', outline: 'none', color: '#6b7676' }} />
-                          <img src={imgCalendarIcon} alt="" style={{ width: 20, height: 20, flexShrink: 0, objectFit: 'contain' }} />
+                          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, color: '#9ca4a6' }}><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth={1.5}/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round"/></svg>
                         </div>
                       </div>
                       <div style={{ flex: 2, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -1024,7 +1005,7 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
                         <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', border: '1px solid #e6ebeb', borderRadius: 4, padding: '8px 8px', gap: 8 }}>
                           <input value={cvv} onChange={e => setCvv(e.target.value.replace(/\D/g,'').slice(0,4))} placeholder="123"
                             style={{ ...T, flex: 1, minWidth: 0, background: 'none', border: 'none', outline: 'none', color: '#6b7676' }} />
-                          <img src={imgHelpCircle} alt="" style={{ width: 20, height: 20, flexShrink: 0, objectFit: 'contain' }} />
+                          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, color: '#9ca4a6' }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={1.5}/><path d="M12 17v-1" stroke="currentColor" strokeWidth={2} strokeLinecap="round"/><path d="M12 13.5a2 2 0 10-2-2" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round"/></svg>
                         </div>
                       </div>
                     </div>
@@ -1045,15 +1026,15 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
               </button>
             </div>
 
-            {/* Trust badges — Figma icons */}
+            {/* Trust badges */}
             <div style={{ display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center' }}>
               {[
-                { src: imgRefreshCwIcon, label: 'Free returns' },
-                { src: imgPackageIcon,   label: 'Free shipping' },
-                { src: imgLockBadge,     label: 'Secure encrypted payment' },
-              ].map(({ src, label }) => (
+                { label: 'Free returns',             icon: <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="#86868b" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"/><path d="M20.49 9A9 9 0 105.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15" stroke="#86868b" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"/></svg> },
+                { label: 'Free shipping',             icon: <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M16.5 9.4L7.55 4.24" stroke="#86868b" strokeWidth={1.5} strokeLinecap="round"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 001 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="#86868b" strokeWidth={1.5}/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" stroke="#86868b" strokeWidth={1.5} strokeLinecap="round"/></svg> },
+                { label: 'Secure encrypted payment',  icon: <svg width={14} height={14} viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#86868b" strokeWidth={1.5}/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#86868b" strokeWidth={1.5} strokeLinecap="round"/></svg> },
+              ].map(({ label, icon }) => (
                 <div key={label} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                  <img src={src} alt="" style={{ width: 14, height: 14, flexShrink: 0 }} />
+                  {icon}
                   <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 400, lineHeight: '18px', color: '#86868b', whiteSpace: 'nowrap' }}>{label}</span>
                 </div>
               ))}
@@ -1065,23 +1046,25 @@ function SummaryBubble({ scrollRef, data, account, onPayment, onEditCompany }: {
   )
 }
 
-function CompactSummaryBubble({ data }: { data: CompanyData }) {
+function CompactSummaryBubble({ data, orderItems }: { data: CompanyData; orderItems: OrderItem[] }) {
   const address = `${data.street} ${data.number}, ${data.postcode}, ${data.city}, Belgium`
+  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const total    = subtotal + Math.round(subtotal * 0.2 * 100) / 100
   return (
     <div style={{ padding: '0 12px' }}>
       <div style={{ position: 'relative', backgroundColor: AI_BG, borderRadius: '0 12px 12px 12px', padding: 16, filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AiAvatar />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {[['Link 2500', '€89'], ['Charging station', '€26']].map(([name, price]) => (
-            <div key={name} style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <p style={{ ...Sm, color: '#121621', margin: 0 }}>{name}</p>
-              <p style={{ ...Sm, color: '#121621', margin: 0 }}>{price}</p>
+          {orderItems.map(item => (
+            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <p style={{ ...Sm, color: '#121621', margin: 0 }}>{item.name}{item.quantity > 1 ? ` × ${item.quantity}` : ''}</p>
+              <p style={{ ...Sm, color: '#121621', margin: 0 }}>€{(item.price * item.quantity).toFixed(2)}</p>
             </div>
           ))}
         </div>
         <div style={{ borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: 8, display: 'flex', justifyContent: 'space-between' }}>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#121621', margin: 0 }}>Total</p>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#121621', margin: 0 }}>€115</p>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#121621', margin: 0 }}>€{total.toFixed(2)}</p>
         </div>
         <p style={{ ...Sm, color: '#525d5d', margin: 0 }}>Ships to: {data.name}, {address}</p>
       </div>
@@ -1146,7 +1129,7 @@ function SuccessView({ onContinue, data }: { onContinue: () => void; data: Compa
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: EASE }}
-      style={{ flex: 1, width: '100%', maxWidth: 600, paddingTop: 48, paddingBottom: 32 }}
+      style={{ width: '100%', maxWidth: 600 }}
     >
       <div style={{ padding: 12, width: '100%' }}>
         <div style={{ position: 'relative', backgroundColor: '#e6f0ef', borderRadius: '0 12px 12px 12px', padding: 32, filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))', display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -1211,7 +1194,9 @@ function SuccessView({ onContinue, data }: { onContinue: () => void; data: Compa
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Checkout() {
-  const { phaseId } = useParams<{ phaseId?: string }>()
+  const [orderItems] = useState<OrderItem[]>(() => {
+    try { return JSON.parse(localStorage.getItem('basketOrder') || '[]') } catch { return [] }
+  })
   const [phase, setPhase]             = useState<Phase>('form')
   const [currentStep, setCurrentStep] = useState(1)
   const [drawerOpen, setDrawerOpen]   = useState(false)
@@ -1228,23 +1213,7 @@ export default function Checkout() {
   const editRef     = useRef<HTMLDivElement>(null)
   const summaryRef  = useRef<HTMLDivElement>(null)
   const paymentRef  = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const parsed = parsePhaseId(phaseId)
-    if (!parsed) {
-      if (phaseId) navigate('/checkout/form', { replace: true })
-      return
-    }
-    if (parsed !== phase) {
-      setPhase(parsed)
-    }
-  }, [phaseId, phase, navigate])
-
-  useEffect(() => {
-    if (phaseId !== phase) {
-      navigate(`/checkout/${phase}`, { replace: true })
-    }
-  }, [phase, phaseId, navigate])
+  const successRef  = useRef<HTMLDivElement>(null)
 
   // Scroll new bubble to top and record that position as the scroll ceiling
   useEffect(() => {
@@ -1255,6 +1224,7 @@ export default function Checkout() {
       edit:     editRef,
       summary:  summaryRef,
       payment:  paymentRef,
+      success:  successRef,
     }
     const ref = map[phase]
     if (!ref?.current || !scrollContainerRef.current) return
@@ -1266,7 +1236,7 @@ export default function Checkout() {
         const containerTop = container.getBoundingClientRect().top
         const elementTop   = element.getBoundingClientRect().top
         const scrollTarget = Math.max(0, container.scrollTop + (elementTop - containerTop) - 48)
-        maxScrollTop.current = (phase === 'summary' || phase === 'payment') ? container.scrollHeight : scrollTarget
+        maxScrollTop.current = (phase === 'summary' || phase === 'payment' || phase === 'success') ? container.scrollHeight : scrollTarget
         scrollTo(container, scrollTarget)
       }, 180)
     })
@@ -1307,17 +1277,6 @@ export default function Checkout() {
   const is   = (p: Phase) => phase === p
   const past = (p: Phase) => CHECKOUT_PHASE_ORDER.indexOf(p) < phaseIdx
 
-  if (is('success')) {
-    return (
-      <>
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center' }}>
-          <Toolbar currentStep={TOTAL_STEPS} totalSteps={TOTAL_STEPS} onBack={() => navigate('/dashboard', { state: { back: true } })} />
-          <SuccessView onContinue={() => navigate('/dashboard')} data={companyData} />
-        </div>
-      </>
-    )
-  }
-
   return (
     <>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center' }}>
@@ -1327,7 +1286,7 @@ export default function Checkout() {
           onBack={() => navigate('/dashboard', { state: { back: true } })}
           onStepperClick={() => setDrawerOpen(true)}
         />
-        <div ref={scrollContainerRef} style={{ flex: 1, width: '100%', maxWidth: 600, overflowY: 'auto', overflowAnchor: 'none', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 48, paddingTop: 48, paddingBottom: 'calc(100vh - 104px)' }}>
+        <div ref={scrollContainerRef} style={{ flex: 1, minHeight: 0, width: '100%', maxWidth: 600, overflowY: 'auto', overflowAnchor: 'none', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 48, paddingTop: 48, paddingBottom: 'calc(100vh - 104px)' }}>
 
           {/* Step 1 form — only shown before submission */}
           {is('form') && (
@@ -1351,6 +1310,9 @@ export default function Checkout() {
                   <UserBubble>
                     <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>
                       {accountData.firstName} {accountData.lastName}
+                    </p>
+                    <p style={{ ...T, color: '#525d5d', margin: 0, textAlign: 'right' }}>
+                      {accountData.email}
                     </p>
                   </UserBubble>
                   <CompactAiBubble text="Verify your email" />
@@ -1421,6 +1383,7 @@ export default function Checkout() {
                   scrollRef={summaryRef}
                   data={companyData}
                   account={accountData}
+                  orderItems={orderItems}
                   onPayment={(label) => { setSelectedPayment(label); setPhase('payment') }}
                   onEditCompany={() => setPhase('selected')}
                 />
@@ -1428,13 +1391,23 @@ export default function Checkout() {
             )}
             {past('summary') && accountData && (
               <motion.div key="summary-done" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: EASE }}>
-                <CompactSummaryBubble data={companyData} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <UserBubble>
+                    <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{companyData.name}</p>
+                  </UserBubble>
+                  <UserBubble>
+                    <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{companyData.street} {companyData.number}</p>
+                    <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{companyData.postcode} {companyData.city}</p>
+                    <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>Belgium</p>
+                  </UserBubble>
+                  <CompactSummaryBubble data={companyData} orderItems={orderItems} />
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Payment — chosen method bubble + bank iframe */}
-          {is('payment') && selectedPayment && (
+          {(is('payment') || past('payment')) && selectedPayment && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1446,7 +1419,20 @@ export default function Checkout() {
             </motion.div>
           )}
           {is('payment') && (
-            <BankBubble scrollRef={paymentRef} onPay={() => setPhase('success')} />
+            <BankBubble scrollRef={paymentRef} onPay={() => { setCurrentStep(TOTAL_STEPS); setPhase('success') }} />
+          )}
+
+          {/* Success */}
+          {is('success') && (
+            <motion.div
+              ref={successRef}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.28, ease: EASE }}
+              style={{ width: '100%', scrollMarginTop: 48 }}
+            >
+              <SuccessView onContinue={() => navigate('/dashboard')} data={companyData} />
+            </motion.div>
           )}
 
         </div>

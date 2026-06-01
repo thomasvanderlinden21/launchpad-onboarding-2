@@ -6,6 +6,7 @@ import Onboarding from './Onboarding.tsx'
 import Dashboard from './Dashboard.tsx'
 import Sales from './Sales.tsx'
 import Checkout from './Checkout.tsx'
+import Basket from './Basket.tsx'
 import { AppShell } from './AppShell.tsx'
 import { getResumeStep } from './onboardingProgress'
 
@@ -19,14 +20,15 @@ function App() {
   return (
     <AppShell>
       <Routes location={location}>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/basket" replace />} />
         <Route path="/onboarding" element={<ResumeOnboarding />} />
         <Route path="/onboarding/:stepId" element={<Onboarding />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/sales" element={<Sales />} />
+        <Route path="/basket" element={<Basket />} />
         <Route path="/checkout" element={<Navigate to="/checkout/form" replace />} />
         <Route path="/checkout/:phaseId" element={<Checkout />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/basket" replace />} />
       </Routes>
     </AppShell>
   )
