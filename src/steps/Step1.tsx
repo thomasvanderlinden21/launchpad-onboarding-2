@@ -78,16 +78,23 @@ function UserBubble({ children, onEdit }: { children: React.ReactNode; onEdit?: 
       onMouseLeave={() => setHovered(false)}
       style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}
     >
-      <motion.button
-        type="button"
-        onClick={onEdit}
-        animate={{ opacity: hovered && onEdit ? 1 : 0, scale: hovered && onEdit ? 1 : 0.85 }}
-        transition={{ duration: 0.15 }}
-        aria-label="Edit this answer"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 9999, backgroundColor: '#e6f0ef', border: '1px solid #c8ddd9', color: '#277777', cursor: 'pointer', flexShrink: 0, pointerEvents: hovered && onEdit ? 'auto' : 'none' }}
-      >
-        <EditIcon />
-      </motion.button>
+      {onEdit ? (
+        <motion.button
+          type="button"
+          onClick={onEdit}
+          animate={{ opacity: hovered ? 1 : 0, scale: hovered ? 1 : 0.85 }}
+          transition={{ duration: 0.15 }}
+          aria-label="Edit this answer"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 9999, backgroundColor: '#e6f0ef', border: '1px solid #c8ddd9', color: '#277777', cursor: 'pointer', flexShrink: 0 }}
+        >
+          <EditIcon />
+        </motion.button>
+      ) : (
+        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" aria-label="Locked" style={{ flexShrink: 0, opacity: 0.35 }}>
+          <rect x="3" y="11" width="18" height="11" rx="2" stroke="#525d5d" strokeWidth={2} />
+          <path d="M7 11V7a5 5 0 0110 0v4" stroke="#525d5d" strokeWidth={2} strokeLinecap="round" />
+        </svg>
+      )}
       <div style={{ position: 'relative', backgroundColor: USER_BG, borderRadius: '12px 0 12px 12px', padding: 12, filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))' }}>
         <UserAvatar />
         {children}
@@ -313,47 +320,15 @@ const COUNTRIES = [
   { value: 'LU', label: 'Luxembourg' },
 ]
 
-const TRUSTEE_OPTIONS = [
-  { value: 'none',      label: 'None' },
-  { value: 'trustee',   label: 'Trustee' },
-  { value: 'protector', label: 'Protector' },
-  { value: 'settlor',   label: 'Settlor' },
-  { value: 'beneficiary', label: 'Beneficiary' },
-]
 
 // ─── Identity bubble ──────────────────────────────────────────────────────────
 
-const imgIdNowBackground = '/images/id-in-progress.png'
+const imgIdNowBackground = '/images/id-verify-phone.png'
 
 const REQUIREMENTS = [
-  {
-    label: 'Valid passport or national ID card',
-    icon: (
-      <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x={2} y={5} width={20} height={14} rx={2} stroke="#525d5d" strokeWidth={1.5} />
-        <circle cx={8} cy={12} r={2.5} stroke="#525d5d" strokeWidth={1.5} />
-        <path d="M13 10h5M13 14h3" stroke="#525d5d" strokeWidth={1.5} strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    label: "Access to your smartphone's camera for selfie verification",
-    icon: (
-      <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#525d5d" strokeWidth={1.5} strokeLinejoin="round" />
-        <circle cx={12} cy={13} r={4} stroke="#525d5d" strokeWidth={1.5} />
-      </svg>
-    ),
-  },
-  {
-    label: 'Good lighting and a stable internet connection',
-    icon: (
-      <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx={12} cy={12} r={5} stroke="#525d5d" strokeWidth={1.5} />
-        <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="#525d5d" strokeWidth={1.5} strokeLinecap="round" />
-      </svg>
-    ),
-  },
+  { label: 'Valid passport or national ID card',                          icon: '/images/id-icon-passport.svg' },
+  { label: "Access to your smartphone's camera for selfie verification",  icon: '/images/id-icon-camera.svg'  },
+  { label: 'Good lighting and a stable internet connection',              icon: '/images/id-icon-light.svg'   },
 ]
 
 function IdentityBubble({ scrollRef, onBegin }: { scrollRef: React.RefObject<HTMLDivElement | null>; onBegin: () => void }) {
@@ -370,18 +345,18 @@ function IdentityBubble({ scrollRef, onBegin }: { scrollRef: React.RefObject<HTM
         {/* Info card */}
         <div style={{ backgroundColor: 'white', borderRadius: 8, boxShadow: '0px 4px 2px rgba(0,0,0,0.15)', padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', margin: 0 }}>What you'll need</p>
-          <div style={{ borderRadius: 12, overflow: 'hidden', backgroundColor: '#f5f7f7', height: 234 }}>
+          <div style={{ borderRadius: 12, overflow: 'hidden', height: 234 }}>
             <img
               src={imgIdNowBackground}
               alt="IDnow identity verification"
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
             />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {REQUIREMENTS.map((req, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', paddingBottom: i < REQUIREMENTS.length - 1 ? 24 : 0 }}>
+              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', paddingBottom: i < REQUIREMENTS.length - 1 ? 12 : 0 }}>
                 <div style={{ width: 40, height: 40, flexShrink: 0, border: '1px solid #b4b7bc', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {req.icon}
+                  <img src={req.icon} alt="" aria-hidden="true" style={{ width: 24, height: 24, objectFit: 'contain' }} />
                 </div>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621', margin: 0 }}>{req.label}</p>
               </div>
@@ -669,8 +644,35 @@ export function Step1({ onComplete }: Step1Props) {
                     <DisabledField label="Country" value="Belgium" />
                   </div>
 
-                  <SelectField label="Trustee relationship" value={trusteeRel} onChange={setTrusteeRel}
-                    options={TRUSTEE_OPTIONS} placeholder="Please select" labelSuffix={<HelpIcon />} />
+                  {/* Trustee relationship — Yes / No */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#525d5d' }}>
+                        Trustee relationship
+                      </label>
+                      <HelpIcon />
+                    </div>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      {(['yes', 'no'] as const).map(opt => {
+                        const sel = trusteeRel === opt
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => setTrusteeRel(opt)}
+                            style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, backgroundColor: 'white', border: `1px solid ${sel ? '#277777' : '#e6ebeb'}`, borderRadius: 6, padding: '12px 16px', cursor: 'pointer', textAlign: 'left' }}
+                          >
+                            <div style={{ width: 16, height: 16, borderRadius: 9999, border: `2px solid ${sel ? '#277777' : '#9ca4a6'}`, backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              {sel && <div style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: '#277777' }} />}
+                            </div>
+                            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621' }}>
+                              {opt === 'yes' ? 'Yes' : 'No'}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
 
                   <ContinueBtn onClick={() => setPhase('identity')} disabled={!canContinueDetails} />
                 </AiBubble>

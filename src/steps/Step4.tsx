@@ -5,11 +5,12 @@ const AI_BG = '#e6f0ef'
 const EASE = [0.22, 1, 0.36, 1] as const
 const T: React.CSSProperties = { fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px' }
 
-type Phase = 'select-bank' | 'bank-login' | 'authorize' | 'connecting' | 'success'
+type Phase = 'select-bank' | 'bank-login' | 'authorize' | 'connecting' | 'success' | 'manual'
 
 export interface Step4Data { bankName: string; bankLogo: string; accountLabel: string }
 interface Step4Props {
   onComplete: (data: Step4Data) => void
+  onBack?: () => void
 }
 
 const SCREEN_LOGIN     = '/images/connect-bank-01.png'
@@ -67,10 +68,11 @@ const ACCOUNTS = [
   { id: '0912', label: 'Account number ending in ...0912' },
 ]
 
-function AuthorizeScreen({ bankLogo, onAuthorize, onDecline }: {
+function AuthorizeScreen({ bankLogo, onAuthorize, onDecline, onBack }: {
   bankLogo: string
   onAuthorize: (accountLabel: string) => void
   onDecline: () => void
+  onBack: () => void
 }) {
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null)
   const [termsChecked, setTermsChecked] = useState(false)
@@ -80,7 +82,20 @@ function AuthorizeScreen({ bankLogo, onAuthorize, onDecline }: {
     <div style={{ width: 493, maxWidth: '100%', backgroundColor: 'white', border: '1px solid #d9d9d9', borderRadius: 4, overflow: 'hidden', fontFamily: 'Inter, sans-serif' }}>
       {/* Bank header */}
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e8e8e8' }}>
-        <img src={bankLogo} alt="Bank" style={{ height: 32, objectFit: 'contain' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Choose a different bank"
+            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#525d5d', fontSize: 13, fontWeight: 500 }}
+          >
+            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Change bank
+          </button>
+          <img src={bankLogo} alt="Bank" style={{ height: 32, objectFit: 'contain' }} />
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={{ fontSize: 12, color: '#333', display: 'flex', alignItems: 'center', gap: 4 }}>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -174,10 +189,60 @@ function AuthorizeScreen({ bankLogo, onAuthorize, onDecline }: {
   )
 }
 
+function ManualBankForm({ onBack, onSubmit }: { onBack: () => void; onSubmit: (label: string) => void }) {
+  const [accountHolder, setAccountHolder] = useState('')
+  const [iban, setIban]                   = useState('')
+  const [bankName, setBankName]           = useState('')
+  const canSubmit = accountHolder.trim() !== '' && iban.trim() !== '' && bankName.trim() !== ''
+
+  return (
+    <AiBubble>
+      <AiTitle>Enter your bank details</AiTitle>
+      <p style={{ ...T, color: '#121621', margin: 0 }}>
+        Fill in your bank account details manually to receive payouts.
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {([
+          { label: 'Account holder name', value: accountHolder, onChange: setAccountHolder, placeholder: 'Alex Carter' },
+          { label: 'IBAN',               value: iban,           onChange: (v: string) => setIban(v.toUpperCase()), placeholder: 'BE68 5390 0754 7034' },
+          { label: 'Bank name',          value: bankName,       onChange: setBankName, placeholder: 'e.g. ING, BNP Paribas Fortis' },
+        ] as const).map(field => (
+          <div key={field.label} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#525d5d' }}>{field.label}</label>
+            <input
+              value={field.value}
+              onChange={e => field.onChange(e.target.value)}
+              placeholder={field.placeholder}
+              style={{ ...T, color: '#121621', backgroundColor: 'white', border: '1px solid #e6ebeb', borderRadius: 4, padding: 12, outline: 'none', width: '100%', boxSizing: 'border-box' as const }}
+            />
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4 }}>
+        <button type="button" onClick={onBack}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#525d5d' }}>
+          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back
+        </button>
+        <button type="button" onClick={() => onSubmit(`${bankName} — ${iban}`)} disabled={!canSubmit}
+          style={{ backgroundColor: canSubmit ? '#277777' : '#9ca4a6', border: 'none', borderRadius: 4, padding: '10px 20px', cursor: canSubmit ? 'pointer' : 'not-allowed', fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: 'white', boxShadow: canSubmit ? 'inset 0px -2px 0px rgba(0,0,0,0.16)' : 'none' }}>
+          Connect account
+        </button>
+      </div>
+    </AiBubble>
+  )
+}
+
 export function Step4({ onComplete }: Step4Props) {
   const [phase, setPhase] = useState<Phase>('select-bank')
   const [selectedBank, setSelectedBank] = useState<string | null>(null)
   const [selectedAccountLabel, setSelectedAccountLabel] = useState('')
+  const [bankSearch, setBankSearch] = useState('')
+  const filteredBanks = bankSearch.trim()
+    ? BANKS.filter(b => b.name.toLowerCase().includes(bankSearch.toLowerCase()))
+    : BANKS
 
   useEffect(() => {
     if (phase !== 'connecting') return
@@ -192,33 +257,108 @@ export function Step4({ onComplete }: Step4Props) {
         {phase === 'select-bank' && (
           <motion.div key="select-bank" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
             <AiBubble>
-              <AiTitle>Connect your bank account</AiTitle>
-              <p style={{ ...T, color: '#121621', margin: 0 }}>Select your bank to connect your account and receive payouts.</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-                {BANKS.map(bank => (
+              <AiTitle>Let's connect your bank account</AiTitle>
+
+              {/* Plaid subtitle */}
+              <p style={{ ...T, color: '#121621', margin: 0 }}>
+                Worldline uses{' '}
+                <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>Plaid</span>
+                {' '}to connect your bank account
+              </p>
+
+              {/* Search + bank logos */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {/* Search field */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#525d5d' }}>
+                    Find your bank
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', border: '1px solid #b4b7bc', borderRadius: 4, padding: '8px', gap: 8 }}>
+                    <input
+                      value={bankSearch}
+                      onChange={e => setBankSearch(e.target.value)}
+                      placeholder="Search"
+                      style={{ ...T, flex: 1, minWidth: 0, background: 'none', border: 'none', outline: 'none', color: '#6b7676', padding: 0 }}
+                    />
+                    <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, color: '#525d5d' }}>
+                      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth={1.5} />
+                      <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Bank logos — horizontal row */}
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+                  {filteredBanks.map(bank => (
+                    <button
+                      key={bank.id}
+                      type="button"
+                      onClick={() => setSelectedBank(bank.id)}
+                      style={{
+                        width: 74, height: 74, flexShrink: 0,
+                        backgroundColor: 'white',
+                        border: `1px solid ${selectedBank === bank.id ? '#277777' : '#e6ebeb'}`,
+                        borderRadius: 8, cursor: 'pointer', overflow: 'hidden',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'border-color 0.15s',
+                      }}
+                    >
+                      <img src={bank.logo} alt={bank.name} style={{ width: 54, height: 54, objectFit: 'contain' }} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Add bank details manually — display only with + icon */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: '#121621', flexShrink: 0 }}>
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" />
+                </svg>
+                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#121621' }}>
+                  Add bank details manually
+                </span>
+              </div>
+
+              {/* Payout currency */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#525d5d' }}>
+                  Payout currency
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', border: '1px solid #b4b7bc', borderRadius: 4, padding: '8px', gap: 8 }}>
+                  <span style={{ ...T, flex: 1, color: '#121621' }}>Euro (€)</span>
+                  <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0, color: '#525d5d' }}>
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Continue + privacy */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'stretch' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <button
-                    key={bank.id}
                     type="button"
-                    onClick={() => { setSelectedBank(bank.id); setPhase('bank-login') }}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: 16,
-                      backgroundColor: selectedBank === bank.id ? '#e6f0ef' : 'white',
-                      border: `1px solid ${selectedBank === bank.id ? '#277777' : '#e6ebeb'}`,
-                      borderRadius: 8,
-                      cursor: 'pointer',
-                      transition: 'border-color 0.15s, background-color 0.15s',
-                    }}
+                    onClick={() => selectedBank && setPhase('bank-login')}
+                    disabled={!selectedBank}
+                    style={{ backgroundColor: selectedBank ? '#277777' : '#9ca4a6', border: `1px solid ${selectedBank ? '#277777' : '#9ca4a6'}`, borderRadius: 4, padding: '8px 12px', minHeight: 40, cursor: selectedBank ? 'pointer' : 'not-allowed', fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: 'white', boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.16)' }}
                   >
-                    <img src={bank.logo} alt={bank.name} style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 8 }} />
-                    <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 500, color: '#121621', textAlign: 'center' }}>{bank.name}</span>
+                    Continue
                   </button>
-                ))}
+                </div>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, lineHeight: '18px', color: '#6b7676', margin: 0, textAlign: 'right' }}>
+                  By clicking here, I agree to the{' '}
+                  <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>Plaid Privacy Policy</span>
+                </p>
               </div>
             </AiBubble>
+          </motion.div>
+        )}
+
+        {phase === 'manual' && (
+          <motion.div key="manual" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
+            <ManualBankForm
+              onBack={() => setPhase('select-bank')}
+              onSubmit={(label) => { setSelectedAccountLabel(label); setPhase('connecting') }}
+            />
           </motion.div>
         )}
 
@@ -239,6 +379,7 @@ export function Step4({ onComplete }: Step4Props) {
                 bankLogo={BANKS.find(b => b.id === selectedBank)?.logo ?? '/images/ing.png'}
                 onAuthorize={(label) => { setSelectedAccountLabel(label); setPhase('connecting') }}
                 onDecline={() => setPhase('bank-login')}
+                onBack={() => { setSelectedBank(null); setPhase('select-bank') }}
               />
             </AiBubble>
           </motion.div>
@@ -257,10 +398,19 @@ export function Step4({ onComplete }: Step4Props) {
           <motion.div key="success" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
             <AiBubble>
               <AiTitle>Connect your bank account</AiTitle>
-              <ScreenImage src={SCREEN_SUCCESS} alt="Success screen" height={579} onClick={() => {
-                const bank = BANKS.find(b => b.id === selectedBank)
-                if (bank) onComplete({ bankName: bank.name, bankLogo: bank.logo, accountLabel: selectedAccountLabel })
-              }} />
+              <ScreenImage src={SCREEN_SUCCESS} alt="Success screen" height={285} />
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const bank = BANKS.find(b => b.id === selectedBank)
+                    if (bank) onComplete({ bankName: bank.name, bankLogo: bank.logo, accountLabel: selectedAccountLabel })
+                  }}
+                  style={{ backgroundColor: '#277777', border: '1px solid #277777', borderRadius: 4, padding: '10px 20px', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: 'white', boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.16)' }}
+                >
+                  Continue
+                </button>
+              </div>
             </AiBubble>
           </motion.div>
         )}

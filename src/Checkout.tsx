@@ -237,17 +237,25 @@ function UserBubble({ children, onEdit }: { children: React.ReactNode; onEdit?: 
       onMouseLeave={() => setHovered(false)}
       style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}
     >
-      {/* Edit button — fades in on hover, sits left of the bubble */}
-      <motion.button
-        type="button"
-        onClick={onEdit}
-        animate={{ opacity: hovered && onEdit ? 1 : 0, scale: hovered && onEdit ? 1 : 0.85 }}
-        transition={{ duration: 0.15 }}
-        aria-label="Edit this answer"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 9999, backgroundColor: '#e6f0ef', border: '1px solid #c8ddd9', color: '#277777', cursor: 'pointer', flexShrink: 0, pointerEvents: hovered && onEdit ? 'auto' : 'none' }}
-      >
-        <EditIcon />
-      </motion.button>
+      {onEdit ? (
+        /* Edit button — fades in on hover */
+        <motion.button
+          type="button"
+          onClick={onEdit}
+          animate={{ opacity: hovered ? 1 : 0, scale: hovered ? 1 : 0.85 }}
+          transition={{ duration: 0.15 }}
+          aria-label="Edit this answer"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 9999, backgroundColor: '#e6f0ef', border: '1px solid #c8ddd9', color: '#277777', cursor: 'pointer', flexShrink: 0 }}
+        >
+          <EditIcon />
+        </motion.button>
+      ) : (
+        /* Lock icon — subtle indicator that this answer is fixed */
+        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" aria-label="Locked" style={{ flexShrink: 0, opacity: 0.35 }}>
+          <rect x="3" y="11" width="18" height="11" rx="2" stroke="#525d5d" strokeWidth={2} />
+          <path d="M7 11V7a5 5 0 0110 0v4" stroke="#525d5d" strokeWidth={2} strokeLinecap="round" />
+        </svg>
+      )}
 
       <div style={{ position: 'relative', backgroundColor: USER_BG, borderRadius: '12px 0 12px 12px', padding: 12, filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))' }}>
         <UserAvatar />

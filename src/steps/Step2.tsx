@@ -325,7 +325,7 @@ export function Step2({ onComplete, selfIndividual, initialData }: Step2Props) {
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <p style={{ ...T, color: '#525d5d', margin: 0 }}>Do you have a photo this person's ID document</p>
+                <p style={{ ...T, color: '#525d5d', margin: 0 }}>Do you have a photo of this person's ID document?</p>
                 <div style={{ display: 'flex', gap: 12 }}>
                   <RadioOption label="Yes" selected={hasPhotoId === true} onClick={() => setHasPhotoId(true)} />
                   <RadioOption label="No" selected={hasPhotoId === false} onClick={() => setHasPhotoId(false)} />

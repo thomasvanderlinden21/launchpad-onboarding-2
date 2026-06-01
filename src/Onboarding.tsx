@@ -311,7 +311,7 @@ export default function Onboarding() {
           {/* ── Step 4 ── */}
           {currentStep === 4 && (
             <div ref={activeStepRef} style={{ width: '100%', scrollMarginTop: 48 }}>
-              <Step4 onComplete={handleStep4Complete} />
+              <Step4 onComplete={handleStep4Complete} onBack={() => setCurrentStep(3)} />
             </div>
           )}
           {currentStep > 4 && step4Data && (

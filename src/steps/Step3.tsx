@@ -220,7 +220,7 @@ function suggestMCCs(description: string): [string, string, string] {
   for (const rule of SUGGESTION_RULES) {
     if (rule.pattern.test(description)) return rule.mccs
   }
-  return ['Eating Places and Restaurants', 'Fast Food Restaurants', 'Miscellaneous and Specialty Retail Shops']
+  return ['Eating Places and Restaurants', 'Fast Food Restaurants', 'Bakeries and Pastries']
 }
 
 const MCC_DATA: Record<string, Record<string, string[]>> = {
@@ -229,7 +229,7 @@ const MCC_DATA: Record<string, Record<string, string[]>> = {
     'Groceries & convenience': ['Grocery Stores and Supermarkets', 'Miscellaneous Food Stores - Convenience Stores and Specialty Markets'],
     'Catering': ['Caterers'],
     'Bars & nightlife': ['Drinking Places (Alcoholic Beverages) - Bars, Taverns, Nightclubs, Cocktail Lounges, and Discotheques'],
-    'Specialty food stores': ['Bakeries', 'Freezer and Locker Meat Provisioners', 'Dairy Products Stores', 'Candy, Nut, and Confectionery Stores'],
+    'Specialty food stores': ['Bakeries and Pastries', 'Bakeries', 'Freezer and Locker Meat Provisioners', 'Dairy Products Stores', 'Candy, Nut, and Confectionery Stores'],
     'Alcohol retail': ['Package Stores - Beer, Wine, and Liquor'],
     'Agriculture & farm co-ops': ['Agricultural Co-operatives'],
   },
@@ -345,13 +345,13 @@ export function Step3({ onComplete }: Step3Props) {
     const text = description.trim()
     const words = text.split(/\s+/).filter(Boolean).length
     if (!text) return { tone: 'neutral' as const, label: '' }
-    if (words < 3) return { tone: 'warn' as const, label: 'Narrowing it down' }
+    if (words < 5) return { tone: 'warn' as const, label: 'Narrowing it down' }
     return { tone: 'good' as const, label: 'This is great company type identified' }
   }, [description])
 
   const mccSuggestions = useMemo(() => suggestMCCs(description), [description])
 
-  const canContinueDescription = description.trim().split(/\s+/).filter(Boolean).length >= 3
+  const canContinueDescription = description.trim().split(/\s+/).filter(Boolean).length >= 5
   const canContinueMccSuggest = mccSuggestion !== ''
   const canContinueCategoryChoice = categoryGroup !== '' && subCategory !== '' && finalCategory !== ''
   const canContinueTurnover = averageTransactionValue !== '' && monthlyTurnover !== ''
@@ -382,7 +382,7 @@ export function Step3({ onComplete }: Step3Props) {
         {phase === 'details' && (
           <motion.div key="details" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
             <AiBubble>
-              <AiTitle>Tell us about company</AiTitle>
+              <AiTitle>Tell us more about your company</AiTitle>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 500, lineHeight: '16px', color: '#525d5d', margin: 0 }}>Do you operate under a different trading name?</p>
