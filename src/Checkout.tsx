@@ -65,11 +65,6 @@ interface OrderItem {
 
 const CHECKOUT_PHASE_ORDER: Phase[] = ['form', 'verification', 'password', 'company', 'results', 'selected', 'edit', 'summary', 'payment', 'success']
 
-function parsePhaseId(phaseId?: string): Phase | null {
-  if (!phaseId) return null
-  if (CHECKOUT_PHASE_ORDER.includes(phaseId as Phase)) return phaseId as Phase
-  return null
-}
 
 interface CompanyData {
   name: string; idNumber: string; street: string; number: string
@@ -833,7 +828,6 @@ function SummaryBubble({ scrollRef, data, account, orderItems, onPayment, onEdit
   const [cvv,         setCvv]         = useState('')
 
   const firstName = account.firstName.charAt(0).toUpperCase() + account.firstName.slice(1)
-  const address = `${data.street} ${data.number}, ${data.postcode}, ${data.city}, Belgium`
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const vat      = Math.round(subtotal * 0.2 * 100) / 100
   const total    = subtotal + vat

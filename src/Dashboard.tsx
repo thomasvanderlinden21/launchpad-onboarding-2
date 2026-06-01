@@ -167,15 +167,6 @@ export default function Dashboard() {
         {/* Progress tracker overlapping the banner */}
         <div style={{ padding: '0 32px 32px', marginTop: -88, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <ProgressTracker onActivate={() => navigate('/onboarding')} />
-          <div>
-            <button type="button" onClick={() => navigate('/basket')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: '#e6ebeb', border: '1px solid #b4b7bc', borderRadius: 4, paddingTop: 10, paddingBottom: 10, paddingLeft: 16, paddingRight: 16, cursor: 'pointer', boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.08)' }}>
-              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#121621' }}>Checkout</span>
-              <svg width={16} height={16} viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path d="M4 10h12M11 5l5 5-5 5" stroke="#121621" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
         </div>
       </div>
     </div>
