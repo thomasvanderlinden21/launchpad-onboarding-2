@@ -61,6 +61,17 @@ function AiBubble({ children }: { children: React.ReactNode }) {
   )
 }
 
+function AiHistoryBubble({ question }: { question: string }) {
+  return (
+    <div style={{ padding: 12 }}>
+      <div style={{ position: 'relative', backgroundColor: AI_BG, borderRadius: '0 12px 12px 12px', padding: '12px 16px', filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))', display: 'inline-block', maxWidth: '80%' }}>
+        <AiAvatar />
+        <p style={{ ...T, color: '#121621', margin: 0 }}>{question}</p>
+      </div>
+    </div>
+  )
+}
+
 function EditIcon() {
   return (
     <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -223,6 +234,38 @@ function HelpIcon() {
       <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" stroke="#6b7676" strokeWidth={1.5} strokeLinecap="round" />
       <circle cx={12} cy={17} r=".5" fill="#6b7676" stroke="#6b7676" strokeWidth={1} />
     </svg>
+  )
+}
+
+function Tooltip({ text }: { text: string }) {
+  const [visible, setVisible] = useState(false)
+  return (
+    <div style={{ position: 'relative', display: 'inline-flex' }}>
+      <button
+        type="button"
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        onClick={() => setVisible(v => !v)}
+        aria-label="More information"
+        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'inline-flex' }}
+      >
+        <HelpIcon />
+      </button>
+      {visible && (
+        <div style={{
+          position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)',
+          backgroundColor: '#121621', color: 'white', borderRadius: 6, padding: '10px 12px',
+          width: 260, fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 400, lineHeight: '18px',
+          zIndex: 100, pointerEvents: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+        }}>
+          {text}
+          <div style={{
+            position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+            borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderTop: '6px solid #121621',
+          }} />
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -476,13 +519,16 @@ export interface Step1Result {
   lastName: string
   isSignatory: boolean
   isUBO: boolean
+  ownershipPct: string
 }
-interface Step1Props { onComplete: (result: Step1Result) => void }
+interface Step1Props { onComplete: (result: Step1Result) => void; onPhaseChange?: (phase: Phase) => void }
 
-export function Step1({ onComplete }: Step1Props) {
+export function Step1({ onComplete, onPhaseChange }: Step1Props) {
   const businessName = 'Beantastic Coffee'
 
   const [phase, setPhase] = useState<Phase>('role')
+
+  useEffect(() => { onPhaseChange?.(phase) }, [phase])
 
   // Role phase
   const [isSignatory,  setIsSignatory]  = useState<boolean | null>(null)
@@ -606,6 +652,9 @@ export function Step1({ onComplete }: Step1Props) {
       {from(phase, 'details') && (
         <motion.div key="after-role" {...ENTER_DOWN} style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
 
+          {/* AI history: role question */}
+          <AiHistoryBubble question="Your role in the company" />
+
           {/* User bubble — role summary */}
           <UserBubble onEdit={() => setPhase('role')}>
             <BubbleText>{buildRoleSummary()}</BubbleText>
@@ -634,8 +683,8 @@ export function Step1({ onComplete }: Step1Props) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <SectionLabel>Address</SectionLabel>
                     <div style={{ display: 'flex', gap: 12 }}>
-                      <Field label="Number" value={streetNo} onChange={setStreetNo} flex="0 0 120px" />
                       <Field label="Street" value={street}   onChange={setStreet}   />
+                      <Field label="Number" value={streetNo} onChange={setStreetNo} flex="0 0 120px" />
                     </div>
                     <div style={{ display: 'flex', gap: 12 }}>
                       <Field label="City"     value={city}     onChange={setCity}     />
@@ -650,7 +699,7 @@ export function Step1({ onComplete }: Step1Props) {
                       <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#525d5d' }}>
                         Trustee relationship
                       </label>
-                      <HelpIcon />
+                      <Tooltip text="A trustee relationship exists when a person or entity manages assets on behalf of a trust. Select Yes if this applies to your business or its owners." />
                     </div>
                     <div style={{ display: 'flex', gap: 12 }}>
                       {(['yes', 'no'] as const).map(opt => {
@@ -680,9 +729,10 @@ export function Step1({ onComplete }: Step1Props) {
             )}
           </AnimatePresence>
 
-          {/* User bubble — name summary (once details done) */}
+          {/* AI history + user name bubble (once details done) */}
           {from(phase, 'identity') && (
-            <motion.div {...ENTER_DOWN}>
+            <motion.div {...ENTER_DOWN} style={{ display: 'flex', flexDirection: 'column' }}>
+              <AiHistoryBubble question="Please complete the below details" />
               <UserBubble onEdit={() => setPhase('details')}>
                 <BubbleText>{firstName} {lastName}</BubbleText>
               </UserBubble>
@@ -698,11 +748,19 @@ export function Step1({ onComplete }: Step1Props) {
             )}
           </AnimatePresence>
 
+
+          {/* AI history: identity question (shown when scan is active) */}
+          {from(phase, 'scan') && (
+            <motion.div {...ENTER_DOWN}>
+              <AiHistoryBubble question="Next up we'll need to confirm your identity" />
+            </motion.div>
+          )}
+
           {/* ── PHASE: scan ── */}
           <AnimatePresence mode="popLayout">
             {is(phase, 'scan') && (
               <motion.div key="scan" exit={EXIT_UP} style={{ width: '100%' }}>
-                <ScanBubble scrollRef={scanRef} onContinue={() => onComplete({ roleSummary: buildRoleSummary(), firstName, lastName, isSignatory: isSignatory ?? false, isUBO: isUBO ?? false })} />
+                <ScanBubble scrollRef={scanRef} onContinue={() => onComplete({ roleSummary: buildRoleSummary(), firstName, lastName, isSignatory: isSignatory ?? false, isUBO: isUBO ?? false, ownershipPct })} />
               </motion.div>
             )}
           </AnimatePresence>

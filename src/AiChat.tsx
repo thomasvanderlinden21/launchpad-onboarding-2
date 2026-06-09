@@ -7,17 +7,29 @@ type ChatMode = 'closed' | 'compact' | 'expanded'
 const AI_BUBBLE_COLOR = '#C7E5DF'
 const EASE = [0.22, 1, 0.36, 1] as const
 
-const SUGGESTION = 'Where can I find my business identification number?'
+export type Suggestion = { label: string; response: string }
 
-const AI_RESPONSE = `Good question Alex, you can find your business identification number (also known as the CBE, KBO, or enterprise number) immediately by searching the official CBE Public Search tool using your company name or address. It is a 10-digit number.
+// ─── Default (business ID) suggestion ────────────────────────────────────────
 
-Example:
-Without VAT 0123.456.789
-With VAT BE0123.456.789
-
-Alternatively you can check your initial registration paperwork, bank account details, or your company's official statutes (published in the Belgian Official Journal/Moniteur belge).`
+const DEFAULT_SUGGESTION: Suggestion = {
+  label: 'Where can I find my business identification number?',
+  response: `Good question Alex, you can find your business identification number (also known as the CBE, KBO, or enterprise number) immediately by searching the official CBE Public Search tool using your company name or address. It is a 10-digit number.\n\nExample:\nWithout VAT 0123.456.789\nWith VAT BE0123.456.789\n\nAlternatively you can check your initial registration paperwork, bank account details, or your company's official statutes (published in the Belgian Official Journal/Moniteur belge).`,
+}
 
 const FALLBACK_RESPONSE = `Sorry, not all prompts are included in this prototype. Try one of these instead:`
+
+// ─── Identity-step suggestions ────────────────────────────────────────────────
+
+export const IDENTITY_SUGGESTIONS: Suggestion[] = [
+  {
+    label: 'Why do I need to provide ID documents?',
+    response: `Great question! We're required by law to verify the identity of all our customers. This is part of Know Your Customer (KYC) regulations and Anti-Money Laundering (AML) compliance — standard practice for all financial services providers.\n\nIt also helps protect you: by confirming your identity, we make sure no one else can open a Launchpad account in your name.\n\nYour documents are processed securely by our trusted partner IDnow and are never stored longer than legally required.`,
+  },
+  {
+    label: 'What do I need to do a video selfie?',
+    response: `For the selfie verification you'll need:\n\n• A valid passport or national ID card\n• Access to your smartphone's camera\n• Good lighting and a stable internet connection\n\nAfter scanning the QR code on screen, IDnow will guide you step by step. The whole process usually takes about 5 minutes.`,
+  },
+]
 
 type Message = {
   id: number
@@ -146,7 +158,12 @@ function UserBubble({ text, time }: { text: string; time: string }) {
   )
 }
 
-function AiBubble({ time, fallback }: { text: string; time: string; fallback?: boolean }) {
+function AiMessageBubble({ text, time, fallback, fallbackSuggestions, onSuggestionClick }: {
+  text: string; time: string; fallback?: boolean
+  fallbackSuggestions?: Suggestion[]
+  onSuggestionClick?: (s: Suggestion) => void
+}) {
+  const paragraphs = text.split('\n\n').filter(Boolean)
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: EASE }}
       style={{ display: 'flex', alignItems: 'flex-start', gap: 8, paddingLeft: 8 }}>
@@ -155,26 +172,21 @@ function AiBubble({ time, fallback }: { text: string; time: string; fallback?: b
         {fallback ? (
           <>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#121621', margin: 0 }}>{FALLBACK_RESPONSE}</p>
-            <div style={{ marginTop: 10 }}>
-              <button type="button" onClick={() => {}} style={{ backgroundColor: '#dcf4fa', borderRadius: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 2, paddingBottom: 2, border: 'none', cursor: 'pointer' }}>
-                <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#066076' }}>{SUGGESTION}</span>
-              </button>
-            </div>
+            {(fallbackSuggestions ?? []).map(s => (
+              <div key={s.label} style={{ marginTop: 8 }}>
+                <button type="button" onClick={() => onSuggestionClick?.(s)}
+                  style={{ backgroundColor: '#dcf4fa', borderRadius: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 2, paddingBottom: 2, border: 'none', cursor: 'pointer' }}>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#066076' }}>{s.label}</span>
+                </button>
+              </div>
+            ))}
           </>
         ) : (
-          <>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#121621', margin: 0 }}>
-              Good question Alex, you can find your business identification number (also known as the CBE, KBO, or enterprise number) immediately by searching the official{' '}
-              <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>CBE Public Search tool</span>
-              {' '}using your company name or address. It is a 10-digit number.
+          paragraphs.map((para, i) => (
+            <p key={i} style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#121621', margin: i > 0 ? '12px 0 0' : 0 }}>
+              {para}
             </p>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#121621', margin: '12px 0 0' }}>
-              Example:<br />Without VAT 0123.456.789<br />With VAT BE0123.456.789
-            </p>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#121621', margin: '12px 0 0' }}>
-              Alternatively you can check your initial registration paperwork, bank account details, or your company's official statutes (published in the Belgian Official Journal/Moniteur belge).
-            </p>
-          </>
+          ))
         )}
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 400, lineHeight: '16px', color: '#6b7676', margin: '8px 0 0' }}>{time}</p>
       </div>
@@ -184,13 +196,15 @@ function AiBubble({ time, fallback }: { text: string; time: string; fallback?: b
 
 // ─── Input ────────────────────────────────────────────────────────────────────
 
-function InputBar({ value, onChange, onSend }: { value: string; onChange: (v: string) => void; onSend: () => void }) {
+function InputBar({ value, onChange, onSend, placeholder = 'Ask me anything' }: {
+  value: string; onChange: (v: string) => void; onSend: () => void; placeholder?: string
+}) {
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && value.trim()) { e.preventDefault(); onSend() }
   }
   return (
     <div style={{ backgroundColor: 'white', borderRadius: 12, paddingLeft: 12, paddingRight: 12, paddingTop: 8, paddingBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
-      <input value={value} onChange={e => onChange(e.target.value)} onKeyDown={handleKey} placeholder="Ask me anything"
+      <input value={value} onChange={e => onChange(e.target.value)} onKeyDown={handleKey} placeholder={placeholder}
         style={{ flex: '1 0 0', fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#121621', background: 'none', border: 'none', outline: 'none', minWidth: 0 }} />
       <button type="button" onClick={onSend} disabled={!value.trim()} aria-label="Send"
         style={{ flexShrink: 0, background: 'none', border: 'none', padding: 0, cursor: value.trim() ? 'pointer' : 'default', display: 'flex', opacity: value.trim() ? 1 : 0.5 }}>
@@ -200,10 +214,10 @@ function InputBar({ value, onChange, onSend }: { value: string; onChange: (v: st
   )
 }
 
-function CompactInputBar({ onClick }: { onClick: () => void }) {
+function CompactInputBar({ onClick, placeholder = 'Ask me anything' }: { onClick: () => void; placeholder?: string }) {
   return (
     <div onClick={onClick} style={{ backgroundColor: 'white', borderRadius: 12, paddingLeft: 12, paddingRight: 12, paddingTop: 8, paddingBottom: 8, display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-      <p style={{ flex: '1 0 0', fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#b4b7bc', margin: 0 }}>Ask me anything</p>
+      <p style={{ flex: '1 0 0', fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#b4b7bc', margin: 0 }}>{placeholder}</p>
       <div style={{ flexShrink: 0, display: 'flex' }}><SendIcon /></div>
     </div>
   )
@@ -218,77 +232,99 @@ function HideButton({ onHide }: { onHide: () => void }) {
   )
 }
 
-function SuggestionChip({ onClick }: { onClick: () => void }) {
+function SuggestionChip({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} style={{ backgroundColor: '#dcf4fa', borderRadius: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 2, paddingBottom: 2, border: 'none', cursor: 'pointer', display: 'block', overflow: 'hidden', maxWidth: '100%' }}>
       <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#066076', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
-        {SUGGESTION}
+        {label}
       </span>
     </button>
   )
 }
 
 // ─── Unified chat panel ───────────────────────────────────────────────────────
-// One persistent component for both compact and expanded states.
-// Height grows/shrinks in place — no unmount/remount between modes.
 
 interface ChatPanelProps {
   mode: 'compact' | 'expanded'
   onHide: () => void
   onExpand: () => void
   onClose: () => void
+  suggestions: Suggestion[]
+  placeholder: string
+  pendingMessage?: string | null
+  onPendingMessageSent?: () => void
 }
 
-function ChatPanel({ mode, onHide, onExpand, onClose }: ChatPanelProps) {
+function ChatPanel({ mode, onHide, onExpand, onClose, suggestions, placeholder, pendingMessage, onPendingMessageSent }: ChatPanelProps) {
   const isExpanded = mode === 'expanded'
   const [messages, setMessages] = useState<Message[]>([])
   const [thinking, setThinking] = useState(false)
   const [draft, setDraft] = useState('')
   const nextId = useRef(0)
+  const lastHandledPending = useRef<string | null>(null)
 
   const { scrollRef, bottomAnchorRef, showJumpToLatest, jumpToLatest } =
     useConversationScroll([messages, thinking])
 
-  // Pre-load example conversation once on first expand
+  const responseMap = Object.fromEntries(suggestions.map(s => [s.label.toLowerCase(), s.response]))
+
+  // Pre-load example conversation once on first expand (skip if triggered externally)
   useEffect(() => {
-    if (!isExpanded || messages.length > 0) return
-    setMessages([{ id: nextId.current++, role: 'user', text: SUGGESTION, time: '11:00' }])
+    if (!isExpanded || messages.length > 0 || pendingMessage) return
+    const first = suggestions[0]
+    if (!first) return
+    setMessages([{ id: nextId.current++, role: 'user', text: first.label, time: '11:00' }])
     setThinking(true)
     const t = setTimeout(() => {
       setThinking(false)
-      setMessages(prev => [...prev, { id: nextId.current++, role: 'ai', text: AI_RESPONSE, time: '11:01' }])
+      setMessages(prev => [...prev, { id: nextId.current++, role: 'ai', text: first.response, time: '11:01' }])
     }, 2200)
     return () => clearTimeout(t)
   }, [isExpanded])
 
-  const send = useCallback(() => {
-    const text = draft.trim()
-    if (!text || thinking) return
-    setDraft('')
-    const isSuggestion = text.toLowerCase() === SUGGESTION.toLowerCase()
+  const sendMessage = useCallback((text: string) => {
+    if (!text.trim() || thinking) return
+    const responseText = responseMap[text.toLowerCase()]
+    const isFallback = !responseText
     setMessages(prev => [...prev, { id: nextId.current++, role: 'user', text, time: now() }])
     setThinking(true)
     setTimeout(() => {
       setThinking(false)
-      setMessages(prev => [...prev, { id: nextId.current++, role: 'ai', text: AI_RESPONSE, time: now(), fallback: !isSuggestion }])
+      setMessages(prev => [...prev, {
+        id: nextId.current++,
+        role: 'ai',
+        text: responseText ?? FALLBACK_RESPONSE,
+        time: now(),
+        fallback: isFallback,
+      }])
     }, 2200)
-  }, [draft, thinking])
+  }, [thinking, responseMap])
 
-  const handleSuggestionClick = useCallback(() => {
+  const send = useCallback(() => {
+    if (!draft.trim()) return
+    sendMessage(draft.trim())
+    setDraft('')
+  }, [draft, sendMessage])
+
+  // Send externally triggered message once expanded
+  const sendMessageRef = useRef(sendMessage)
+  useEffect(() => { sendMessageRef.current = sendMessage }, [sendMessage])
+  useEffect(() => {
+    if (!isExpanded || !pendingMessage || lastHandledPending.current === pendingMessage) return
+    lastHandledPending.current = pendingMessage
+    sendMessageRef.current(pendingMessage)
+    onPendingMessageSent?.()
+  }, [isExpanded, pendingMessage])
+
+  const handleSuggestionClick = useCallback((s: Suggestion) => {
     if (!isExpanded) { onExpand(); return }
-    if (thinking) return
-    setMessages(prev => [...prev, { id: nextId.current++, role: 'user', text: SUGGESTION, time: now() }])
-    setThinking(true)
-    setTimeout(() => {
-      setThinking(false)
-      setMessages(prev => [...prev, { id: nextId.current++, role: 'ai', text: AI_RESPONSE, time: now() }])
-    }, 2200)
-  }, [isExpanded, thinking, onExpand])
+    sendMessage(s.label)
+  }, [isExpanded, onExpand, sendMessage])
 
   return (
     <div style={{ backgroundColor: 'rgba(255,255,255,0.72)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 12, boxShadow: '0px 8px 40px rgba(0,0,0,0.14)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
-      {/* Header — slides open when expanding */}
+      {/* Header */}
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
@@ -311,7 +347,7 @@ function ChatPanel({ mode, onHide, onExpand, onClose }: ChatPanelProps) {
         )}
       </AnimatePresence>
 
-      {/* Messages — grows from 0 to full height */}
+      {/* Messages */}
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
@@ -325,7 +361,9 @@ function ChatPanel({ mode, onHide, onExpand, onClose }: ChatPanelProps) {
             {messages.map(msg =>
               msg.role === 'user'
                 ? <UserBubble key={msg.id} text={msg.text} time={msg.time} />
-                : <AiBubble key={msg.id} text={msg.text} time={msg.time} fallback={msg.fallback} />
+                : <AiMessageBubble key={msg.id} text={msg.text} time={msg.time} fallback={msg.fallback}
+                    fallbackSuggestions={suggestions}
+                    onSuggestionClick={s => handleSuggestionClick(s)} />
             )}
             <AnimatePresence>{thinking && <ThinkingDots key="dots" />}</AnimatePresence>
             <div ref={bottomAnchorRef} style={{ flexShrink: 0, height: 1 }} />
@@ -346,22 +384,26 @@ function ChatPanel({ mode, onHide, onExpand, onClose }: ChatPanelProps) {
         )}
       </AnimatePresence>
 
-      {/* Footer — always visible, input switches between read-only / active */}
+      {/* Footer */}
       <div style={{ flexShrink: 0, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AnimatePresence mode="wait" initial={false}>
           {isExpanded ? (
             <motion.div key="input-active" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
-              <InputBar value={draft} onChange={setDraft} onSend={send} />
+              <InputBar value={draft} onChange={setDraft} onSend={send} placeholder={placeholder} />
             </motion.div>
           ) : (
             <motion.div key="input-compact" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
-              <CompactInputBar onClick={onExpand} />
+              <CompactInputBar onClick={onExpand} placeholder={placeholder} />
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Suggestion chips */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ flex: '1 0 0', minWidth: 0 }}>
-            <SuggestionChip onClick={handleSuggestionClick} />
+          <div style={{ flex: '1 0 0', minWidth: 0, display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {suggestions.map(s => (
+              <SuggestionChip key={s.label} label={s.label} onClick={() => handleSuggestionClick(s)} />
+            ))}
           </div>
           <HideButton onHide={isExpanded ? onClose : onHide} />
         </div>
@@ -386,32 +428,46 @@ function AskButton({ onClick }: { onClick: () => void }) {
 
 // ─── Main widget ──────────────────────────────────────────────────────────────
 
-export function AiChatWidget() {
-  const [mode, setMode] = useState<ChatMode>('closed')
+interface AiChatWidgetProps {
+  initialMode?: ChatMode
+  suggestions?: Suggestion[]
+  placeholder?: string
+  externalTrigger?: { message: string; id: number } | null
+  onOpen?: () => void
+}
+
+export function AiChatWidget({ initialMode = 'closed', suggestions, placeholder, externalTrigger, onOpen }: AiChatWidgetProps) {
+  const [mode, setMode] = useState<ChatMode>(initialMode)
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null)
+
+  const resolvedSuggestions = suggestions ?? [DEFAULT_SUGGESTION]
+  const resolvedPlaceholder = placeholder ?? 'Ask me anything'
+
+  useEffect(() => {
+    if (!externalTrigger) return
+    setMode('expanded')
+    setPendingMessage(externalTrigger.message)
+  }, [externalTrigger?.id])
+
+  const panelStyle: React.CSSProperties = {
+    position: 'fixed', bottom: 48,
+    left: '50%', transform: 'translateX(-50%)',
+    width: 'calc(100% - 24px)', maxWidth: 700,
+    zIndex: 60,
+    pointerEvents: mode === 'closed' ? 'none' : 'auto',
+  }
 
   return (
     <>
       {/* Floating "Ask Jani" button — only when closed */}
       <div style={{ position: 'fixed', bottom: 48, right: 48, zIndex: 60 }}>
         <AnimatePresence>
-          {mode === 'closed' && <AskButton onClick={() => setMode('compact')} />}
+          {mode === 'closed' && <AskButton onClick={() => { setMode('compact'); onOpen?.() }} />}
         </AnimatePresence>
       </div>
 
-      {/* Unified panel — grows horizontally on expand, narrows on collapse */}
-      <motion.div
-        animate={{ maxWidth: mode === 'expanded' ? 800 : 560 }}
-        transition={{
-          maxWidth: { duration: 0.38, ease: EASE, delay: mode === 'expanded' ? 0 : 0.32 },
-        }}
-        style={{
-          position: 'fixed', bottom: 48,
-          left: '50%', transform: 'translateX(-50%)',
-          width: 'calc(100% - 24px)',
-          zIndex: 60,
-          pointerEvents: mode === 'closed' ? 'none' : 'auto',
-        }}
-      >
+      {/* Unified panel */}
+      <div style={panelStyle}>
         <AnimatePresence>
           {mode !== 'closed' && (
             <motion.div
@@ -426,11 +482,15 @@ export function AiChatWidget() {
                 onHide={() => setMode('closed')}
                 onExpand={() => setMode('expanded')}
                 onClose={() => setMode('closed')}
+                suggestions={resolvedSuggestions}
+                placeholder={resolvedPlaceholder}
+                pendingMessage={pendingMessage}
+                onPendingMessageSent={() => setPendingMessage(null)}
               />
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
     </>
   )
 }

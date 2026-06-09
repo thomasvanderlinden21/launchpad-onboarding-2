@@ -671,9 +671,9 @@ function CompanyLookupBubble({ scrollRef, initialQuery = '', onQueryChange, onFi
 
         {!showResults && (
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="button" onClick={onFind} disabled={!canSearch} aria-label="find my company"
+            <button type="button" onClick={onFind} disabled={!canSearch} aria-label="Find my company"
               style={{ backgroundColor: '#277777', border: '1px solid #277777', borderRadius: 4, padding: '8px 16px', minHeight: 44, cursor: canSearch ? 'pointer' : 'not-allowed', fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: 'white', boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.16)', opacity: canSearch ? 1 : 0.5, whiteSpace: 'nowrap' }}>
-              find my company
+              Find my company
             </button>
           </div>
         )}

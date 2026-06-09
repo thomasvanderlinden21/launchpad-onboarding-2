@@ -56,6 +56,17 @@ function AiBubble({ children }: { children: React.ReactNode }) {
   )
 }
 
+function AiHistoryBubble({ question }: { question: string }) {
+  return (
+    <div style={{ padding: 12 }}>
+      <div style={{ position: 'relative', backgroundColor: AI_BG, borderRadius: '0 12px 12px 12px', padding: '12px 16px', filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))', display: 'inline-block', maxWidth: '80%' }}>
+        <AiAvatar />
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#121621', margin: 0 }}>{question}</p>
+      </div>
+    </div>
+  )
+}
+
 function UserBubble({ text }: { text: string }) {
   return (
     <div style={{ padding: 12, display: 'flex', justifyContent: 'flex-end' }}>
@@ -139,11 +150,19 @@ export function Step5({ onComplete }: Step5Props) {
   const [confirmed, setConfirmed] = useState(false)
 
   return (
-    <div style={{ width: '100%', paddingBottom: 32 }}>
+    <div style={{ width: '100%', paddingBottom: 32, display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+      {/* Always visible: bank connected context */}
+      <UserBubble text="Bank account connected" />
+
+      {/* Review phase history (visible once submitted) */}
+      {phase === 'submitted' && (
+        <AiHistoryBubble question="Take a moment to review the below documents" />
+      )}
+
       <AnimatePresence mode="wait">
         {phase === 'review' && (
           <motion.div key="review" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
-            <UserBubble text="Bank account connected" />
             <AiBubble>
               <h2 style={{ fontFamily: 'Raleway, Inter, sans-serif', fontSize: 24, fontWeight: 500, lineHeight: '32px', color: '#121621', margin: 0 }}>
                 Take a moment to review the below documents
@@ -179,7 +198,7 @@ export function Step5({ onComplete }: Step5Props) {
         )}
 
         {phase === 'submitted' && (
-          <motion.div key="submitted" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }}>
+          <motion.div key="submitted" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <UserBubble text="Documents reviewed and submitted" />
             <AiBubble>
               <h2 style={{ fontFamily: 'Raleway, Inter, sans-serif', fontSize: 24, fontWeight: 500, lineHeight: '32px', color: '#121621', margin: 0, width: '100%', textAlign: 'center' }}>

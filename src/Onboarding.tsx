@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Drawer } from './Drawer'
 import { Modal } from './Modal'
 import { StepperContent } from './StepperContent'
-import { AiChatWidget } from './AiChat'
+import { AiChatWidget, IDENTITY_SUGGESTIONS } from './AiChat'
 import { Step1, type Step1Result } from './steps/Step1'
 import { Step2, type Step2Individual } from './steps/Step2'
 import { Step3, type Step3Data } from './steps/Step3'
@@ -151,6 +151,9 @@ function Toolbar({ title = 'Onboarding', currentStep, totalSteps, onBack, onStep
 
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(() => getResumeStep())
+  const [step1Phase, setStep1Phase] = useState<string>('role')
+  const [identityTrigger, setIdentityTrigger] = useState<{ message: string; id: number } | null>(null)
+  const [identityHintDismissed, setIdentityHintDismissed] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [leaveModalOpen, setLeaveModalOpen] = useState(false)
   const navigate = useNavigate()
@@ -255,7 +258,7 @@ export default function Onboarding() {
           {/* ── Step 1 ── */}
           {currentStep === 1 && (
             <div ref={activeStepRef} style={{ width: '100%', scrollMarginTop: 48 }}>
-              <Step1 onComplete={handleStep1Complete} />
+              <Step1 onComplete={handleStep1Complete} onPhaseChange={setStep1Phase} />
             </div>
           )}
           {currentStep > 1 && step1Result && (
@@ -272,6 +275,7 @@ export default function Onboarding() {
               <Step2
                 onComplete={handleStep2Complete}
                 selfIndividual={step1Result ? buildSelfIndividual(step1Result) : undefined}
+                selfOwnershipPct={step1Result?.ownershipPct}
                 initialData={step2Data ?? undefined}
               />
             </div>
@@ -352,7 +356,41 @@ export default function Onboarding() {
         </p>
       </Modal>
 
-      <AiChatWidget />
+      <AnimatePresence>
+        {currentStep === 1 && step1Phase === 'identity' && !identityHintDismissed && (
+          <motion.div
+            key="identity-hint"
+            initial={{ opacity: 0, scale: 0.9, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0, transition: { duration: 0.22, ease: EASE, delay: 0.5 } }}
+            exit={{ opacity: 0, scale: 0.9, y: 8, transition: { duration: 0.22, ease: EASE } }}
+            style={{ position: 'fixed', bottom: 116, right: 48, zIndex: 59 }}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setIdentityTrigger({ message: 'Why do I need to provide ID documents?', id: Date.now() })
+                setIdentityHintDismissed(true)
+              }}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'block' }}
+            >
+              {/* Bubble + triangle share the drop-shadow so they look like one shape */}
+              <div style={{ filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <div style={{ backgroundColor: '#dcf4fa', borderRadius: '12px 0 12px 12px', padding: '8px 12px' }}>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#066076', margin: 0, whiteSpace: 'nowrap' }}>
+                    Why do I need to provide ID documents?
+                  </p>
+                </div>
+                <div style={{ width: 0, height: 0, marginRight: 20, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderTop: '8px solid #dcf4fa' }} />
+              </div>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AiChatWidget
+        externalTrigger={identityTrigger}
+        onOpen={() => setIdentityHintDismissed(true)}
+        suggestions={currentStep === 1 ? IDENTITY_SUGGESTIONS : undefined}
+      />
     </>
   )
 }

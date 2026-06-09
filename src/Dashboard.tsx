@@ -51,9 +51,11 @@ function ProgressTracker({ onActivate }: { onActivate: () => void }) {
             Finish setting up to unlock your full launchpad and start maximising your finances
           </p>
         </div>
-        <button type="button" onClick={onActivate} style={{ flexShrink: 0, backgroundColor: '#277777', border: '1px solid #277777', borderRadius: 4, padding: '12px 12px', minHeight: 48, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: 'white', boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.16)', whiteSpace: 'nowrap' }}>
-          Complete activation
-        </button>
+        {completedStep < STEPS.length && (
+          <button type="button" onClick={onActivate} style={{ flexShrink: 0, backgroundColor: '#277777', border: '1px solid #277777', borderRadius: 4, padding: '12px 12px', minHeight: 48, cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: 'white', boxShadow: 'inset 0px -2px 0px rgba(0,0,0,0.16)', whiteSpace: 'nowrap' }}>
+            Complete activation
+          </button>
+        )}
       </div>
 
       {/* Steps */}

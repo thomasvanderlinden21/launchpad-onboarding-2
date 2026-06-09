@@ -120,6 +120,17 @@ function RadioOption({ label, selected, onClick }: { label: string; selected: bo
   )
 }
 
+function AiHistoryBubble({ question }: { question: string }) {
+  return (
+    <div style={{ padding: 12 }}>
+      <div style={{ position: 'relative', backgroundColor: AI_BG, borderRadius: '0 12px 12px 12px', padding: '12px 16px', filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))', display: 'inline-block', maxWidth: '80%' }}>
+        <AiAvatar />
+        <p style={{ ...T, color: '#121621', margin: 0 }}>{question}</p>
+      </div>
+    </div>
+  )
+}
+
 function UploadBox() {
   return (
     <div style={{ border: '1px dashed #b4b7bc', borderRadius: 4, backgroundColor: 'white', minHeight: 84, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
@@ -139,10 +150,11 @@ export interface Step2Individual { name: string; detail: string }
 interface Step2Props {
   onComplete: (individuals: Step2Individual[]) => void
   selfIndividual?: Step2Individual
+  selfOwnershipPct?: string
   initialData?: Step2Individual[]
 }
 
-export function Step2({ onComplete, selfIndividual, initialData }: Step2Props) {
+export function Step2({ onComplete, selfIndividual, selfOwnershipPct, initialData }: Step2Props) {
   const [phase, setPhase] = useState<Step2Phase>('overview')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [individuals, setIndividuals] = useState<KeyIndividual[]>(() => {
@@ -163,8 +175,9 @@ export function Step2({ onComplete, selfIndividual, initialData }: Step2Props) {
   const [expiryDate, setExpiryDate] = useState('')
   const [email, setEmail] = useState('')
 
-  const canSaveBase = firstName.trim() !== '' && lastName.trim() !== '' && isSignatory !== null && isUBO !== null && (isUBO === false || ownershipPct.trim() !== '') && hasPhotoId !== null
-  const canSave = canSaveBase && (hasPhotoId ? idType !== '' && idNumber.trim() !== '' && expiryDate.trim() !== '' : email.trim() !== '')
+  const isSelf = editingId === 'self'
+  const canSaveBase = firstName.trim() !== '' && lastName.trim() !== '' && isSignatory !== null && isUBO !== null && (isUBO === false || ownershipPct.trim() !== '') && (isSelf || hasPhotoId !== null)
+  const canSave = canSaveBase && (isSelf || (hasPhotoId ? idType !== '' && idNumber.trim() !== '' && expiryDate.trim() !== '' : email.trim() !== ''))
 
   function resetForm() {
     setFirstName('')
@@ -184,8 +197,9 @@ export function Step2({ onComplete, selfIndividual, initialData }: Step2Props) {
     setFirstName(parts[0] ?? '')
     setLastName(parts.slice(1).join(' '))
     setIsSignatory(person.detail.toLowerCase().includes('signatory') || person.detail.toLowerCase().includes('director'))
-    setIsUBO(person.detail.toLowerCase().includes('ubo'))
-    setOwnershipPct('')
+    const personIsUBO = person.detail.toLowerCase().includes('ubo')
+    setIsUBO(personIsUBO)
+    setOwnershipPct(person.id === 'self' && personIsUBO ? (selfOwnershipPct ?? '') : '')
     setHasPhotoId(null)
     setIdType('')
     setIdNumber('')
@@ -282,6 +296,7 @@ export function Step2({ onComplete, selfIndividual, initialData }: Step2Props) {
 
         {phase === 'add' && (
           <motion.div key="add" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: EASE }} style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            <AiHistoryBubble question="Are there any other key individuals?" />
             <UserBubble text={selfIndividual
               ? `Confirmed ${selfIndividual.name}'s details are correct`
               : individuals.length > 0
@@ -393,6 +408,7 @@ export function Step2({ onComplete, selfIndividual, initialData }: Step2Props) {
 
         {phase === 'edit' && (
           <motion.div key="edit" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22, ease: EASE }} style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            <AiHistoryBubble question="Are there any other key individuals?" />
             <UserBubble text={`Editing ${individuals.find(i => i.id === editingId)?.name ?? 'key individual'}`} />
 
             <AiBubble>
@@ -430,56 +446,60 @@ export function Step2({ onComplete, selfIndividual, initialData }: Step2Props) {
                 </div>
               )}
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <p style={{ ...T, color: '#525d5d', margin: 0 }}>Do you have a photo of this person's ID document?</p>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <RadioOption label="Yes" selected={hasPhotoId === true} onClick={() => setHasPhotoId(true)} />
-                  <RadioOption label="No" selected={hasPhotoId === false} onClick={() => setHasPhotoId(false)} />
-                </div>
-              </div>
-
-              {hasPhotoId === true && (
+              {!isSelf && (
                 <>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <label style={{ ...T, color: '#525d5d' }}>ID type</label>
-                    <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', paddingTop: 0, paddingBottom: 0 }}>
-                      <select value={idType} onChange={e => setIdType(e.target.value)} style={{ ...T, flex: 1, border: 'none', outline: 'none', background: 'none', appearance: 'none', color: idType ? '#121621' : '#9ca4a6' }}>
-                        <option value="" disabled>Please select</option>
-                        <option value="passport">Passport</option>
-                        <option value="id-card">National ID card</option>
-                      </select>
-                      <svg width={18} height={18} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="#525d5d" strokeWidth={1.5} strokeLinecap="round" /></svg>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <p style={{ ...T, color: '#525d5d', margin: 0 }}>Do you have a photo of this person's ID document?</p>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <RadioOption label="Yes" selected={hasPhotoId === true} onClick={() => setHasPhotoId(true)} />
+                      <RadioOption label="No" selected={hasPhotoId === false} onClick={() => setHasPhotoId(false)} />
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <LabeledInput label="ID number" value={idNumber} onChange={setIdNumber} />
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 0 0' }}>
-                      <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#525d5d' }}>Expiry date</label>
-                      <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <input value={expiryDate} onChange={e => handleExpiryDateChange(e.target.value)} placeholder="dd-mm-yyyy" style={{ ...T, flex: 1, border: 'none', outline: 'none', background: 'none', color: '#121621', minWidth: 0 }} />
-                        <svg width={20} height={20} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                          <rect x="3" y="5" width="18" height="16" rx="2" stroke="#121621" strokeWidth={1.5} />
-                          <path d="M8 3v4M16 3v4M3 10h18" stroke="#121621" strokeWidth={1.5} strokeLinecap="round" />
-                        </svg>
+
+                  {hasPhotoId === true && (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <label style={{ ...T, color: '#525d5d' }}>ID type</label>
+                        <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', paddingTop: 0, paddingBottom: 0 }}>
+                          <select value={idType} onChange={e => setIdType(e.target.value)} style={{ ...T, flex: 1, border: 'none', outline: 'none', background: 'none', appearance: 'none', color: idType ? '#121621' : '#9ca4a6' }}>
+                            <option value="" disabled>Please select</option>
+                            <option value="passport">Passport</option>
+                            <option value="id-card">National ID card</option>
+                          </select>
+                          <svg width={18} height={18} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="#525d5d" strokeWidth={1.5} strokeLinecap="round" /></svg>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <label style={{ ...T, color: '#525d5d' }}>Upload ID document</label>
-                    <UploadBox />
-                  </div>
-                </>
-              )}
+                      <div style={{ display: 'flex', gap: 12 }}>
+                        <LabeledInput label="ID number" value={idNumber} onChange={setIdNumber} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 0 0' }}>
+                          <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, lineHeight: '18px', color: '#525d5d' }}>Expiry date</label>
+                          <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <input value={expiryDate} onChange={e => handleExpiryDateChange(e.target.value)} placeholder="dd-mm-yyyy" style={{ ...T, flex: 1, border: 'none', outline: 'none', background: 'none', color: '#121621', minWidth: 0 }} />
+                            <svg width={20} height={20} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                              <rect x="3" y="5" width="18" height="16" rx="2" stroke="#121621" strokeWidth={1.5} />
+                              <path d="M8 3v4M16 3v4M3 10h18" stroke="#121621" strokeWidth={1.5} strokeLinecap="round" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <label style={{ ...T, color: '#525d5d' }}>Upload ID document</label>
+                        <UploadBox />
+                      </div>
+                    </>
+                  )}
 
-              {hasPhotoId === false && (
-                <>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <label style={{ ...T, color: '#525d5d' }}>What is their email address?</label>
-                    <input value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
-                  </div>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, lineHeight: '18px', color: '#525d5d', margin: 0 }}>
-                    We will send an email to verify their identity and you will receive an email confirmation once verified.
-                  </p>
+                  {hasPhotoId === false && (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <label style={{ ...T, color: '#525d5d' }}>What is their email address?</label>
+                        <input value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
+                      </div>
+                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400, lineHeight: '18px', color: '#525d5d', margin: 0 }}>
+                        We will send an email to verify their identity and you will receive an email confirmation once verified.
+                      </p>
+                    </>
+                  )}
                 </>
               )}
 

@@ -7,6 +7,7 @@ const EASE = [0.22, 1, 0.36, 1] as const
 const T: React.CSSProperties = { fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px' }
 
 type Phase = 'details' | 'location' | 'description' | 'mcc-suggest' | 'category-choice' | 'category-confirm' | 'turnover'
+const PHASE_ORDER: Phase[] = ['details', 'location', 'description', 'mcc-suggest', 'category-choice', 'category-confirm', 'turnover']
 
 export interface Step3Data { salesLocation: string; description: string; category: string }
 interface Step3Props {
@@ -54,7 +55,7 @@ function EditIcon() {
   )
 }
 
-function UserBubble({ text, onEdit }: { text: string; onEdit?: () => void }) {
+function UserBubble({ text, children, onEdit }: { text?: string; children?: React.ReactNode; onEdit?: () => void }) {
   const [hovered, setHovered] = React.useState(false)
   return (
     <div
@@ -76,7 +77,7 @@ function UserBubble({ text, onEdit }: { text: string; onEdit?: () => void }) {
       )}
       <div style={{ position: 'relative', backgroundColor: USER_BG, borderRadius: '12px 0 12px 12px', padding: 12, filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))' }}>
         <UserAvatar />
-        <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{text}</p>
+        {children ?? <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{text}</p>}
       </div>
     </div>
   )
@@ -84,6 +85,17 @@ function UserBubble({ text, onEdit }: { text: string; onEdit?: () => void }) {
 
 function AiTitle({ children }: { children: React.ReactNode }) {
   return <h2 style={{ fontFamily: 'Raleway, Inter, sans-serif', fontSize: 24, fontWeight: 500, lineHeight: '32px', color: '#121621', margin: 0 }}>{children}</h2>
+}
+
+function AiHistoryBubble({ question }: { question: string }) {
+  return (
+    <div style={{ padding: 12 }}>
+      <div style={{ position: 'relative', backgroundColor: AI_BG, borderRadius: '0 12px 12px 12px', padding: '12px 16px', filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))', display: 'inline-block', maxWidth: '80%' }}>
+        <AiAvatar />
+        <p style={{ ...T, color: '#121621', margin: 0 }}>{question}</p>
+      </div>
+    </div>
+  )
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -327,7 +339,8 @@ export function Step3({ onComplete }: Step3Props) {
   const [differentTradingName, setDifferentTradingName] = useState<boolean>(true)
   const [tradingName, setTradingName] = useState('Beantastic Coffee')
   const [vatId, setVatId] = useState('BE0123456789')
-  const [customerContact, setCustomerContact] = useState('')
+  const [customerEmail, setCustomerEmail] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
   const [website, setWebsite] = useState('')
 
   const [description, setDescription] = useState('')
@@ -339,7 +352,7 @@ export function Step3({ onComplete }: Step3Props) {
   const [averageTransactionValue, setAverageTransactionValue] = useState('')
   const [monthlyTurnover, setMonthlyTurnover] = useState('')
 
-  const detailsComplete = vatId.trim() !== '' && customerContact.trim() !== '' && website.trim() !== '' && (!differentTradingName || tradingName.trim() !== '')
+  const detailsComplete = vatId.trim() !== '' && (customerEmail.trim() !== '' || customerPhone.trim() !== '') && website.trim() !== '' && (!differentTradingName || tradingName.trim() !== '')
 
   const descriptionScore = useMemo(() => {
     const text = description.trim()
@@ -355,6 +368,8 @@ export function Step3({ onComplete }: Step3Props) {
   const canContinueMccSuggest = mccSuggestion !== ''
   const canContinueCategoryChoice = categoryGroup !== '' && subCategory !== '' && finalCategory !== ''
   const canContinueTurnover = averageTransactionValue !== '' && monthlyTurnover !== ''
+
+  const past = (p: Phase) => PHASE_ORDER.indexOf(phase) > PHASE_ORDER.indexOf(p)
 
   const salesLocationSummary = 'Sales location is 1442 Chaussee de Haecht'
 
@@ -412,7 +427,10 @@ export function Step3({ onComplete }: Step3Props) {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <FieldLabel>Provide the best customer service contact for customers</FieldLabel>
-                <input value={customerContact} onChange={e => setCustomerContact(e.target.value)} placeholder="Email or contact number" style={inputStyle} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <input value={customerEmail} onChange={e => setCustomerEmail(e.target.value)} placeholder="Email address" type="email" style={inputStyle} />
+                  <input value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="Phone number" type="tel" style={inputStyle} />
+                </div>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -429,8 +447,12 @@ export function Step3({ onComplete }: Step3Props) {
 
         {phase === 'location' && (
           <motion.div key="location" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <UserBubble text={differentTradingName ? tradingName : 'Beantastic Coffee'} onEdit={() => setPhase('details')} />
-            <UserBubble text={`VAT ID ${vatId}`} onEdit={() => setPhase('details')} />
+            <AiHistoryBubble question="Tell us more about your company" />
+            <UserBubble onEdit={() => setPhase('details')}>
+              {[differentTradingName ? tradingName : 'Beantastic Coffee', `VAT ID ${vatId}`, customerEmail, customerPhone, website].filter(Boolean).map((line, i) => (
+                <p key={i} style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{line}</p>
+              ))}
+            </UserBubble>
             <AiBubble>
               <AiTitle>Where will your terminal be used?</AiTitle>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -450,6 +472,7 @@ export function Step3({ onComplete }: Step3Props) {
 
         {phase === 'description' && (
           <motion.div key="description" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <AiHistoryBubble question="Where will your terminal be used?" />
             <UserBubble text={salesLocationSummary} onEdit={() => setPhase('location')} />
             <AiBubble>
               <AiTitle>What products or services does your company provide?</AiTitle>
@@ -612,6 +635,7 @@ export function Step3({ onComplete }: Step3Props) {
 
         {phase === 'turnover' && (
           <motion.div key="turnover" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22, ease: EASE }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <AiHistoryBubble question="What products or services does your company provide?" />
             <UserBubble text={`${differentTradingName ? tradingName : 'Beantastic Coffee'} — ${category}`} />
             <AiBubble>
               <AiTitle>This will help us estimate your annual turnover</AiTitle>

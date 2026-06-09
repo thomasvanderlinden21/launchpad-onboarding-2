@@ -36,6 +36,35 @@ function AiAvatar() {
   )
 }
 
+const USER_BG = '#dcf4fa'
+
+function UserBubble({ text }: { text: string }) {
+  return (
+    <div style={{ padding: 12, display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ position: 'relative', backgroundColor: USER_BG, borderRadius: '12px 0 12px 12px', padding: 12, filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))' }}>
+        <div style={{ position: 'absolute', top: -12, right: -9, width: 17, height: 17, borderRadius: 9999, backgroundColor: '#066076', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+          <svg width={10} height={10} viewBox="0 0 10 10" fill="none" aria-hidden="true">
+            <circle cx={5} cy={3.5} r={2} fill="white" />
+            <path d="M1 9c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="white" strokeWidth={1} strokeLinecap="round" />
+          </svg>
+        </div>
+        <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'right' }}>{text}</p>
+      </div>
+    </div>
+  )
+}
+
+function AiHistoryBubble({ question }: { question: string }) {
+  return (
+    <div style={{ padding: 12 }}>
+      <div style={{ position: 'relative', backgroundColor: AI_BG, borderRadius: '0 12px 12px 12px', padding: '12px 16px', filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))', display: 'inline-block', maxWidth: '80%' }}>
+        <AiAvatar />
+        <p style={{ ...T, color: '#121621', margin: 0 }}>{question}</p>
+      </div>
+    </div>
+  )
+}
+
 function AiBubble({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ padding: 12, width: '100%' }}>
@@ -250,8 +279,19 @@ export function Step4({ onComplete }: Step4Props) {
     return () => window.clearTimeout(id)
   }, [phase])
 
+  const pastBankSelection = ['bank-login', 'authorize', 'connecting', 'success'].includes(phase)
+  const selectedBankName = BANKS.find(b => b.id === selectedBank)?.name ?? ''
+
   return (
-    <div style={{ width: '100%', paddingBottom: 32 }}>
+    <div style={{ width: '100%', paddingBottom: 32, display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+      {pastBankSelection && (
+        <>
+          <AiHistoryBubble question="Let's connect your bank account" />
+          <UserBubble text={selectedBankName} />
+        </>
+      )}
+
       <AnimatePresence mode="wait">
 
         {phase === 'select-bank' && (
