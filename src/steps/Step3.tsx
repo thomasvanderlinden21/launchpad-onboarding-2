@@ -7,7 +7,6 @@ const EASE = [0.22, 1, 0.36, 1] as const
 const T: React.CSSProperties = { fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px' }
 
 type Phase = 'details' | 'location' | 'description' | 'mcc-suggest' | 'category-choice' | 'category-confirm' | 'turnover'
-const PHASE_ORDER: Phase[] = ['details', 'location', 'description', 'mcc-suggest', 'category-choice', 'category-confirm', 'turnover']
 
 export interface Step3Data { salesLocation: string; description: string; category: string }
 interface Step3Props {
@@ -368,8 +367,6 @@ export function Step3({ onComplete }: Step3Props) {
   const canContinueMccSuggest = mccSuggestion !== ''
   const canContinueCategoryChoice = categoryGroup !== '' && subCategory !== '' && finalCategory !== ''
   const canContinueTurnover = averageTransactionValue !== '' && monthlyTurnover !== ''
-
-  const past = (p: Phase) => PHASE_ORDER.indexOf(phase) > PHASE_ORDER.indexOf(p)
 
   const salesLocationSummary = 'Sales location is 1442 Chaussee de Haecht'
 
