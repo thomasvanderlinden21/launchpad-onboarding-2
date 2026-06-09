@@ -1150,11 +1150,22 @@ function SuccessView({ onContinue, data }: { onContinue: () => void; data: Compa
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
             <svg width={54} height={39} viewBox="0 0 54 39" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-              <rect x="1" y="8" width="52" height="30" rx="4" fill="#e6f0ef" stroke="#277777" strokeWidth="1.5"/>
-              <path d="M1 16h52" stroke="#277777" strokeWidth="1.5"/>
-              <rect x="8" y="23" width="10" height="4" rx="1" fill="#277777"/>
-              <rect x="36" y="23" width="10" height="4" rx="1" fill="#b4b7bc"/>
-              <path d="M18 1l6 7M36 1l-6 7" stroke="#277777" strokeWidth="1.5" strokeLinecap="round"/>
+              {/* Speed lines */}
+              <path d="M2 17h8M1 21h6M2 25h5" stroke="#277777" strokeWidth="1.8" strokeLinecap="round"/>
+              {/* Body */}
+              <path d="M16 22c0 0 2-8 8-8h10l4 5h4l2 3H16z" fill="#277777"/>
+              {/* Seat/back */}
+              <path d="M24 14h8l2 3h-12l2-3z" fill="#066076"/>
+              {/* Front fork */}
+              <path d="M44 22l2 5" stroke="#277777" strokeWidth="2" strokeLinecap="round"/>
+              {/* Rear wheel */}
+              <circle cx="20" cy="28" r="6" fill="none" stroke="#277777" strokeWidth="2.5"/>
+              <circle cx="20" cy="28" r="2" fill="#277777"/>
+              {/* Front wheel */}
+              <circle cx="44" cy="28" r="6" fill="none" stroke="#277777" strokeWidth="2.5"/>
+              <circle cx="44" cy="28" r="2" fill="#277777"/>
+              {/* Handlebar */}
+              <path d="M42 20l3-3" stroke="#277777" strokeWidth="1.8" strokeLinecap="round"/>
             </svg>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, fontWeight: 400, lineHeight: '24px', color: '#121621', margin: 0 }}>
               Order number <span style={{ fontWeight: 700 }}>{orderNumber}</span>
