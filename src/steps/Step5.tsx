@@ -11,10 +11,6 @@ interface Step5Props {
   onComplete: () => void
 }
 
-const DOC_ICON_PAGE = 'https://www.figma.com/api/mcp/asset/f2244f07-c7f6-4d2d-88f5-675ae6e796aa'
-const DOC_ICON_PDF = 'https://www.figma.com/api/mcp/asset/596201ef-dc74-4e61-81be-6bb56f455fa1'
-const OPEN_ICON = 'https://www.figma.com/api/mcp/asset/03d04485-f818-41e5-825c-3beff40e3faf'
-const HOURGLASS_ICON = 'https://www.figma.com/api/mcp/asset/20b722d2-9c02-4a3a-92f4-72721b6f4365'
 
 const DOCUMENTS = [
   'Contract agreement',
@@ -80,12 +76,13 @@ function UserBubble({ text }: { text: string }) {
 
 function DocumentIcon() {
   return (
-    <div style={{ position: 'relative', width: 32, height: 32, flexShrink: 0 }}>
-      <img src={DOC_ICON_PAGE} alt="" aria-hidden="true" style={{ position: 'absolute', left: '17.5%', top: 0, width: '80%', height: '100%' }} />
-      <div style={{ position: 'absolute', left: '2.5%', top: '45%', width: '65%', height: '40%', backgroundColor: '#277777', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
-        <img src={DOC_ICON_PDF} alt="" aria-hidden="true" style={{ width: '100%', height: '100%' }} />
-      </div>
-    </div>
+    <svg width={32} height={32} viewBox="0 0 32 32" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <rect x="8" y="2" width="17" height="22" rx="2" fill="#f5f7f7" stroke="#e6ebeb" strokeWidth="1.5"/>
+      <path d="M19 2v6h6" stroke="#e6ebeb" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M11 13h10M11 17h10M11 21h6" stroke="#b4b7bc" strokeWidth="1.2" strokeLinecap="round"/>
+      <rect x="3" y="18" width="13" height="8" rx="1.5" fill="#277777"/>
+      <text x="9.5" y="24.5" textAnchor="middle" fill="white" fontSize="5" fontWeight="700" fontFamily="Inter,sans-serif">PDF</text>
+    </svg>
   )
 }
 
@@ -113,7 +110,11 @@ function DocumentTile({ label, isFirst, isLast }: { label: string; isFirst: bool
     >
       <DocumentIcon />
       <span style={{ flex: 1, fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 500, lineHeight: '22px', color: '#121621' }}>{label}</span>
-      <img src={OPEN_ICON} alt="" aria-hidden="true" style={{ width: 18, height: 18, flexShrink: 0 }} />
+      <svg width={18} height={18} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="#525d5d" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"/>
+        <polyline points="15,3 21,3 21,9" stroke="#525d5d" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"/>
+        <line x1="10" y1="14" x2="21" y2="3" stroke="#525d5d" strokeWidth={1.5} strokeLinecap="round"/>
+      </svg>
     </button>
   )
 }
@@ -206,7 +207,12 @@ export function Step5({ onComplete }: Step5Props) {
               </h2>
 
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-                <img src={HOURGLASS_ICON} alt="" aria-hidden="true" style={{ width: 76, height: 76 }} />
+                <svg width={76} height={76} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 2h14M5 22h14" stroke="#277777" strokeWidth={1.5} strokeLinecap="round"/>
+                  <path d="M6 2c0 4.5 2.5 7 6 9-3.5 2-6 4.5-6 9" stroke="#277777" strokeWidth={1.5} strokeLinecap="round"/>
+                  <path d="M18 2c0 4.5-2.5 7-6 9 3.5 2 6 4.5 6 9" stroke="#277777" strokeWidth={1.5} strokeLinecap="round"/>
+                  <path d="M9.5 18.5h5" stroke="#277777" strokeWidth={1.5} strokeLinecap="round"/>
+                </svg>
                 <div style={{ textAlign: 'center' }}>
                   <p style={{ margin: 0, fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#121621' }}>We're now completing the final checks to activate your account.</p>
                   <p style={{ margin: 0, fontFamily: 'Inter, sans-serif', fontSize: 16, fontWeight: 400, lineHeight: '22px', color: '#121621' }}>We'll be in touch as soon as everything is ready.</p>

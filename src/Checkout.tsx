@@ -1075,9 +1075,6 @@ function CompactSummaryBubble({ data, orderItems }: { data: CompanyData; orderIt
   )
 }
 
-const imgBankIdCheck = 'https://www.figma.com/api/mcp/asset/e380b8ac-e499-459f-a0f6-ca1a9cd7be42'
-const imgBankAiAvatar = 'https://www.figma.com/api/mcp/asset/88e15c4d-76c5-4514-bdf6-5aab6b139a35'
-const imgBankLoadingIcon = 'https://www.figma.com/api/mcp/asset/e17602a5-4961-425d-a80b-f2a39696e396'
 
 function BankBubble({ scrollRef, onPay }: { scrollRef: React.RefObject<HTMLDivElement | null>; onPay: () => void }) {
   useEffect(() => {
@@ -1089,25 +1086,34 @@ function BankBubble({ scrollRef, onPay }: { scrollRef: React.RefObject<HTMLDivEl
     <motion.div ref={scrollRef} {...ENTER_DOWN} transition={{ ...ENTER_DOWN.transition, delay: 0.26 }} style={{ width: '100%', scrollMarginTop: 48 }}>
       <div style={{ padding: 12, width: '100%' }}>
         <div style={{ position: 'relative', backgroundColor: '#e6f0ef', borderRadius: '0 12px 12px 12px', padding: 32, filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))', display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <img src={imgBankAiAvatar} alt="" aria-hidden="true" style={{ position: 'absolute', top: -12, left: -12, width: 17, height: 17 }} />
+          <div style={{ position: 'absolute', top: -12, left: -12, width: 17, height: 17, borderRadius: 9999, backgroundColor: '#277777', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+            <svg width={10} height={10} viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 1l2.2 6.4L18 10l-5.8 2.6L10 19l-2.2-6.4L2 10l5.8-2.6L10 1z" fill="white"/></svg>
+          </div>
 
           <h2 style={{ fontFamily: 'Raleway, Inter, sans-serif', fontSize: 24, fontWeight: 500, lineHeight: '32px', color: '#121621', margin: 0, textAlign: 'center' }}>
             Connecting to your bank
           </h2>
 
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-            <div style={{ width: 358, maxWidth: '100%', height: 142, borderRadius: 20, overflow: 'hidden', backgroundColor: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src={imgBankIdCheck} alt="Mastercard ID Check" style={{ width: '99.81%', height: '141.55%', objectFit: 'cover', objectPosition: 'center 22%' }} />
+            <div style={{ width: 358, maxWidth: '100%', height: 142, borderRadius: 20, backgroundColor: '#f5f7f7', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <svg width={40} height={40} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="2" y="5" width="20" height="14" rx="3" stroke="#277777" strokeWidth={1.5}/>
+                <path d="M2 9h20" stroke="#277777" strokeWidth={1.5}/>
+                <rect x="5" y="13" width="4" height="2" rx="1" fill="#277777"/>
+              </svg>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#6b7676', margin: 0 }}>Secure bank verification</p>
             </div>
 
-            <motion.img
-              src={imgBankLoadingIcon}
-              alt=""
-              aria-hidden="true"
+            <motion.div
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 1.2, ease: 'linear' }}
               style={{ width: 50, height: 50 }}
-            />
+            >
+              <svg width={50} height={50} viewBox="0 0 50 50" fill="none" aria-hidden="true">
+                <circle cx={25} cy={25} r={20} stroke="#e6ebeb" strokeWidth={5}/>
+                <path d="M25 5a20 20 0 0120 20" stroke="#277777" strokeWidth={5} strokeLinecap="round"/>
+              </svg>
+            </motion.div>
 
             <p style={{ ...T, color: '#121621', margin: 0, textAlign: 'center' }}>
               This may take up to ten seconds
@@ -1121,8 +1127,6 @@ function BankBubble({ scrollRef, onPay }: { scrollRef: React.RefObject<HTMLDivEl
 
 // ─── Success view ─────────────────────────────────────────────────────────────
 
-const imgSuccessOrderVector = 'https://www.figma.com/api/mcp/asset/52a89be8-f46d-475e-be02-83c334010b07'
-const imgSuccessAiAvatar = 'https://www.figma.com/api/mcp/asset/a60ecada-8684-4b55-9f63-9f61507a5b8b'
 
 function SuccessView({ onContinue, data }: { onContinue: () => void; data: CompanyData }) {
   const orderNumber = '#WL123547'
@@ -1136,14 +1140,22 @@ function SuccessView({ onContinue, data }: { onContinue: () => void; data: Compa
     >
       <div style={{ padding: 12, width: '100%' }}>
         <div style={{ position: 'relative', backgroundColor: '#e6f0ef', borderRadius: '0 12px 12px 12px', padding: 32, filter: 'drop-shadow(0px 4px 2px rgba(0,0,0,0.10))', display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <img src={imgSuccessAiAvatar} alt="" aria-hidden="true" style={{ position: 'absolute', top: -12, left: -12, width: 17, height: 17 }} />
+          <div style={{ position: 'absolute', top: -12, left: -12, width: 17, height: 17, borderRadius: 9999, backgroundColor: '#277777', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+            <svg width={10} height={10} viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 1l2.2 6.4L18 10l-5.8 2.6L10 19l-2.2-6.4L2 10l5.8-2.6L10 1z" fill="white"/></svg>
+          </div>
 
           <h1 style={{ fontFamily: 'Raleway, Inter, sans-serif', fontSize: 24, fontWeight: 500, lineHeight: '32px', color: '#121621', margin: 0 }}>
             Thank you for your purchase
           </h1>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
-            <img src={imgSuccessOrderVector} alt="" aria-hidden="true" style={{ width: 54.194, height: 38.667, flexShrink: 0 }} />
+            <svg width={54} height={39} viewBox="0 0 54 39" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+              <rect x="1" y="8" width="52" height="30" rx="4" fill="#e6f0ef" stroke="#277777" strokeWidth="1.5"/>
+              <path d="M1 16h52" stroke="#277777" strokeWidth="1.5"/>
+              <rect x="8" y="23" width="10" height="4" rx="1" fill="#277777"/>
+              <rect x="36" y="23" width="10" height="4" rx="1" fill="#b4b7bc"/>
+              <path d="M18 1l6 7M36 1l-6 7" stroke="#277777" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 20, fontWeight: 400, lineHeight: '24px', color: '#121621', margin: 0 }}>
               Order number <span style={{ fontWeight: 700 }}>{orderNumber}</span>
             </p>
